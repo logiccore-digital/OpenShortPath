@@ -13,6 +13,7 @@ import (
 
 	"openshortpath/server/config"
 	"openshortpath/server/handlers"
+	"openshortpath/server/models"
 )
 
 func main() {
@@ -48,6 +49,11 @@ func main() {
 		log.Printf("Connected to SQLite database: %s", sqlitePath)
 	}
 
+	// Auto-migrate database models
+	if err := db.AutoMigrate(&models.ShortURL{}); err != nil {
+		log.Fatalf("Failed to auto-migrate database: %v", err)
+	}
+
 	// Set Gin mode
 	if os.Getenv("GIN_MODE") == "" {
 		gin.SetMode(gin.ReleaseMode)
@@ -58,9 +64,11 @@ func main() {
 
 	// Initialize handlers with database
 	helloHandler := handlers.NewHelloHandler(db)
+	shortenHandler := handlers.NewShortenHandler(db, cfg)
 
 	// Routes
 	r.GET("/", helloHandler.HelloWorld)
+	r.POST("/api/v1/shorten", shortenHandler.Shorten)
 
 	// Start server
 	port := os.Getenv("PORT")

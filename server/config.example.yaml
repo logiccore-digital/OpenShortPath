@@ -3,7 +3,6 @@
 
 # Server port (default: 3000)
 port: 3000
-
 # PostgreSQL connection URI (optional)
 # If provided, the server will use Postgres instead of SQLite
 # postgres_uri: postgres://user:password@localhost:5432/dbname?sslmode=disable
@@ -11,4 +10,9 @@ port: 3000
 # SQLite database path (default: db.sqlite)
 # Only used if postgres_uri is not provided
 # sqlite_path: db.sqlite
+
+# Available short domains (default: ["localhost:3000"])
+# List of domains used to shorten URLs
+# available_short_domains:
+#   - localhost:3000
 

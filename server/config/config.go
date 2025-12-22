@@ -8,15 +8,17 @@ import (
 )
 
 type Config struct {
-	Port        int    `yaml:"port"`
-	PostgresURI string `yaml:"postgres_uri"`
-	SQLitePath  string `yaml:"sqlite_path"`
+	Port                  int      `yaml:"port"`
+	PostgresURI           string   `yaml:"postgres_uri"`
+	SQLitePath            string   `yaml:"sqlite_path"`
+	AvailableShortDomains []string `yaml:"available_short_domains"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
 	config := &Config{
-		Port:       3000, // default port
-		SQLitePath: "db.sqlite", // default SQLite path
+		Port:                  3000,                       // default port
+		SQLitePath:            "db.sqlite",                // default SQLite path
+		AvailableShortDomains: []string{"localhost:3000"}, // default short domains
 	}
 
 	if configPath == "" {
@@ -39,7 +41,9 @@ func LoadConfig(configPath string) (*Config, error) {
 	if config.SQLitePath == "" && config.PostgresURI == "" {
 		config.SQLitePath = "db.sqlite"
 	}
+	if len(config.AvailableShortDomains) == 0 {
+		config.AvailableShortDomains = []string{"localhost:3000"}
+	}
 
 	return config, nil
 }
-
