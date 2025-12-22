@@ -41,6 +41,7 @@ The server supports an optional YAML configuration file specified with the `--co
 - `port` (int): Server port (default: 3000)
 - `postgres_uri` (string): PostgreSQL connection URI. If provided, the server will use Postgres instead of SQLite.
 - `sqlite_path` (string): Path to SQLite database file (default: `db.sqlite`)
+- `available_short_domains` (list of strings): List of domains used to shorten URLs (default: `["localhost:3000"]`)
 
 ### Example Config Files
 
@@ -56,6 +57,8 @@ sqlite_path: data/custom.db
 ```yaml
 port: 8080
 postgres_uri: postgres://user:password@localhost:5432/dbname?sslmode=disable
+available_short_domains:
+  - localhost:3000
 ```
 
 **Default SQLite (minimal config):**
@@ -68,6 +71,7 @@ If no config file is provided, the server uses:
 
 - Port: 3000
 - Database: SQLite at `db.sqlite`
+- Available short domains: `["localhost:3000"]`
 
 ## Project Structure
 
