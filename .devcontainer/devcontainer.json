@@ -1,0 +1,31 @@
+{
+	"name": "OpenShortPath Dev Container",
+	"image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+	
+	"features": {
+		"ghcr.io/devcontainers/features/go:1": {
+			"version": "1.23"
+		},
+		"ghcr.io/devcontainers/features/node:1": {
+			"version": "lts"
+		}
+	},
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"golang.go",
+				"dbaeumer.vscode-eslint",
+				"esbenp.prettier-vscode"
+			]
+		}
+	},
+
+	"remoteUser": "vscode",
+	"remoteEnv": {
+		"PATH": "${containerEnv:PATH}:/usr/local/go/bin"
+	},
+
+	"postCreateCommand": "go version && node --version && npm --version"
+}
+
