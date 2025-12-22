@@ -1,0 +1,14 @@
+# Example configuration file for OpenShortPath Server
+# Copy this file to config.yaml and modify as needed
+
+# Server port (default: 3000)
+port: 3000
+
+# PostgreSQL connection URI (optional)
+# If provided, the server will use Postgres instead of SQLite
+# postgres_uri: postgres://user:password@localhost:5432/dbname?sslmode=disable
+
+# SQLite database path (default: db.sqlite)
+# Only used if postgres_uri is not provided
+# sqlite_path: db.sqlite
+
