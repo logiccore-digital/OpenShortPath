@@ -65,9 +65,11 @@ func main() {
 	// Initialize handlers with database
 	helloHandler := handlers.NewHelloHandler(db)
 	shortenHandler := handlers.NewShortenHandler(db, cfg)
+	redirectHandler := handlers.NewRedirectHandler(db, cfg)
 
 	// Routes
 	r.GET("/", helloHandler.HelloWorld)
+	r.GET("/:slug", redirectHandler.Redirect)
 	r.POST("/api/v1/shorten", shortenHandler.Shorten)
 
 	// Start server
