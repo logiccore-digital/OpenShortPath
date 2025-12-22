@@ -13,6 +13,7 @@ import (
 
 	"openshortpath/server/config"
 	"openshortpath/server/handlers"
+	"openshortpath/server/middleware"
 	"openshortpath/server/models"
 )
 
@@ -61,6 +62,13 @@ func main() {
 
 	// Initialize router
 	r := gin.Default()
+
+	// Initialize JWT middleware if JWT config is provided
+	if cfg.JWT != nil {
+		jwtMiddleware := middleware.NewJWTMiddleware(cfg.JWT)
+		r.Use(jwtMiddleware.OptionalAuth())
+		log.Printf("JWT authentication enabled (algorithm: %s)", cfg.JWT.Algorithm)
+	}
 
 	// Initialize handlers with database
 	helloHandler := handlers.NewHelloHandler(db)

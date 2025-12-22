@@ -16,3 +16,28 @@ port: 3000
 # available_short_domains:
 #   - localhost:3000
 
+# JWT Authentication (optional)
+# If provided, enables optional JWT authentication for all API routes
+# JWT tokens are passed as Bearer tokens in the Authorization header
+# When a valid JWT token is provided, the 'sub' claim is extracted as User ID
+# jwt:
+#   # Algorithm: "HS256" for symmetric (HMAC) or "RS256" for asymmetric (RSA)
+#   algorithm: HS256
+#   # Secret key for HS256 (required if using HS256)
+#   secret_key: your-secret-key-here
+#   # Public key for RS256 in PEM format (required if using RS256)
+#   # public_key: |
+#   #   -----BEGIN PUBLIC KEY-----
+#   #   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+#   #   -----END PUBLIC KEY-----
+
+# Example: RS256 configuration
+# jwt:
+#   algorithm: RS256
+#   public_key: |
+#     -----BEGIN PUBLIC KEY-----
+#     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyOuJvX8X8X8X8X8X8X8X
+#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
+#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
+#     -----END PUBLIC KEY-----
+
