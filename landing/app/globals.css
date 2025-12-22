@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply selection:bg-gray-700 selection:text-white dark:selection:bg-gray-700 dark:selection:text-white;
+  }
+  
+  /* Fix dropdown option colors for dark mode on Windows */
+  select {
+    color-scheme: light;
+  }
+  
+  .dark select {
+    color-scheme: dark;
+  }
+}
+
