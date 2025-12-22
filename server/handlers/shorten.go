@@ -9,12 +9,13 @@ import (
 	"gorm.io/gorm"
 
 	"openshortpath/server/config"
+	"openshortpath/server/constants"
 	"openshortpath/server/models"
 )
 
 type ShortenHandler struct {
-	db   *gorm.DB
-	cfg  *config.Config
+	db  *gorm.DB
+	cfg *config.Config
 }
 
 type ShortenRequest struct {
@@ -62,7 +63,7 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 	var req ShortenRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"error": "Invalid request body",
+			"error":   "Invalid request body",
 			"details": err.Error(),
 		})
 		return
@@ -102,10 +103,18 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 	if result.Error != gorm.ErrRecordNotFound {
 		// Database error
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Database error",
+			"error":   "Database error",
 			"details": result.Error.Error(),
 		})
 		return
+	}
+
+	// Get user ID from context if available (from JWT token)
+	userID := ""
+	if userIDValue, exists := c.Get(constants.ContextKeyUserID); exists {
+		if userIDStr, ok := userIDValue.(string); ok {
+			userID = userIDStr
+		}
 	}
 
 	// Create new ShortURL record
@@ -113,12 +122,12 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 		Domain: req.Domain,
 		Slug:   slug,
 		URL:    req.URL,
-		UserID: "", // Empty for now
+		UserID: userID,
 	}
 
 	if err := h.db.Create(&shortURL).Error; err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "Failed to create short URL",
+			"error":   "Failed to create short URL",
 			"details": err.Error(),
 		})
 		return
@@ -127,4 +136,3 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 	// Return the full ShortURL object
 	c.JSON(http.StatusCreated, shortURL)
 }
-

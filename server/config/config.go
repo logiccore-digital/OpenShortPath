@@ -7,11 +7,18 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
+type JWT struct {
+	Algorithm string `yaml:"algorithm"` // "HS256" or "RS256"
+	SecretKey string `yaml:"secret_key"` // Secret key for HS256 (optional if using RS256)
+	PublicKey string `yaml:"public_key"` // Public key for RS256 in PEM format (optional if using HS256)
+}
+
 type Config struct {
 	Port                  int      `yaml:"port"`
 	PostgresURI           string   `yaml:"postgres_uri"`
 	SQLitePath            string   `yaml:"sqlite_path"`
 	AvailableShortDomains []string `yaml:"available_short_domains"`
+	JWT                   *JWT     `yaml:"jwt,omitempty"`
 }
 
 func LoadConfig(configPath string) (*Config, error) {
