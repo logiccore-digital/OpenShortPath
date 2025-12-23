@@ -16,6 +16,13 @@ port: 3000
 # available_short_domains:
 #   - localhost:3000
 
+# Authentication provider (optional)
+# Options: "external_jwt" (default) or "local"
+# - "external_jwt": JWT tokens are provided externally, server only validates them
+# - "local": Server handles authentication via username/password and issues JWT tokens
+#   When set to "local", the login endpoint at /api/v1/login is enabled
+# auth_provider: external_jwt
+
 # JWT Authentication (optional)
 # If provided, enables optional JWT authentication for all API routes
 # JWT tokens are passed as Bearer tokens in the Authorization header
@@ -31,7 +38,8 @@ port: 3000
 #   #   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
 #   #   -----END PUBLIC KEY-----
 
-# Example: RS256 configuration
+# Example: External JWT with RS256 configuration
+# auth_provider: external_jwt
 # jwt:
 #   algorithm: RS256
 #   public_key: |
@@ -40,4 +48,32 @@ port: 3000
 #     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
 #     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
 #     -----END PUBLIC KEY-----
+
+# Example: Local authentication with HS256
+# auth_provider: local
+# jwt:
+#   algorithm: HS256
+#   secret_key: your-secret-key-here
+
+# Example: Local authentication with RS256
+# auth_provider: local
+# jwt:
+#   algorithm: RS256
+#   # Private key is required for signing tokens when using local auth with RS256
+#   private_key: |
+#     -----BEGIN PRIVATE KEY-----
+#     MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...
+#     -----END PRIVATE KEY-----
+#   # Public key is required for verifying tokens
+#   public_key: |
+#     -----BEGIN PUBLIC KEY-----
+#     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyOuJvX8X8X8X8X8X8X8X
+#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
+#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
+#     -----END PUBLIC KEY-----
+
+# Admin password for administrative API endpoints
+# This is a super long password used for authentication on admin endpoints
+# Pass this as a Bearer token in the Authorization header: Authorization: Bearer <admin_password>
+# admin_password: change-this-to-a-super-long-random-password-at-least-128-characters-long-for-security-purposes-use-a-password-manager-to-generate-a-strong-random-password
 
