@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { ArrowLeft, Edit, Trash2, Save, X } from "lucide-react"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/Navbar"
@@ -101,8 +102,11 @@ export function ShortURLDetail() {
       setShortURL(updated)
       setIsEditing(false)
       setSuccess("Short URL updated successfully!")
+      toast.success("Short URL saved successfully!")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update short URL")
+      const errorMessage = err instanceof Error ? err.message : "Failed to update short URL"
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setSubmitting(false)
     }
@@ -124,9 +128,12 @@ export function ShortURLDetail() {
 
     try {
       await deleteShortURL(id)
+      toast.success("Short URL deleted successfully!")
       navigate("/")
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete short URL")
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete short URL"
+      setError(errorMessage)
+      toast.error(errorMessage)
       setShowDeleteConfirm(false)
     } finally {
       setDeleting(false)
@@ -163,7 +170,7 @@ export function ShortURLDetail() {
         <Navbar />
         <div className="p-8">
           <div className="max-w-4xl mx-auto">
-            <Card>
+            <Card className="bg-white dark:bg-background">
               <CardContent className="pt-6">
                 <div className="text-center py-8">
                   <p className="text-red-600 mb-4">{error}</p>
@@ -210,7 +217,7 @@ export function ShortURLDetail() {
               </div>
             )}
 
-            <Card>
+            <Card className="bg-white dark:bg-background">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <div>
@@ -277,7 +284,7 @@ export function ShortURLDetail() {
                         type="url"
                         value={editedUrl}
                         onChange={(e) => setEditedUrl(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                        className="w-full px-3 py-2 border border-border bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                         required
                       />
                     ) : (
@@ -302,7 +309,7 @@ export function ShortURLDetail() {
                       <select
                         value={editedDomain}
                         onChange={(e) => setEditedDomain(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                        className="w-full px-3 py-2 border border-border bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
                         required
                       >
                         {domains.map((domain) => (
@@ -327,7 +334,7 @@ export function ShortURLDetail() {
                         type="text"
                         value={editedSlug}
                         onChange={(e) => setEditedSlug(e.target.value)}
-                        className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm font-mono"
+                        className="w-full px-3 py-2 border border-border bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm font-mono"
                         required
                       />
                     ) : (

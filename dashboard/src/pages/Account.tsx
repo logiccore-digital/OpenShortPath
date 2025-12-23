@@ -64,13 +64,13 @@ export function Account() {
             <h1 className="text-4xl font-bold">Account</h1>
 
             {loading ? (
-              <Card>
+              <Card className="bg-white dark:bg-background">
                 <CardContent className="pt-6">
                   <div className="text-center py-8 text-muted-foreground">Loading...</div>
                 </CardContent>
               </Card>
             ) : error ? (
-              <Card>
+              <Card className="bg-white dark:bg-background">
                 <CardContent className="pt-6">
                   <div className="text-center py-8">
                     <p className="text-red-600 mb-4">{error}</p>
@@ -78,7 +78,7 @@ export function Account() {
                 </CardContent>
               </Card>
             ) : user ? (
-              <Card>
+              <Card className="bg-white dark:bg-background">
                 <CardHeader>
                   <CardTitle>Account Information</CardTitle>
                   <CardDescription>

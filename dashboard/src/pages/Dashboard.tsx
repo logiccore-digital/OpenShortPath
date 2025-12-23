@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Scissors, Eye, ChevronLeft, ChevronRight } from "lucide-react"
+import { Scissors, Eye, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
+import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/Navbar"
@@ -67,6 +68,7 @@ export function Dashboard() {
     try {
       await shorten(selectedDomain, url, slug || undefined)
       setSuccess("Short URL created successfully!")
+      toast.success("Short URL created successfully!")
       // Reset form
       setUrl("")
       setSlug("")
@@ -76,7 +78,9 @@ export function Dashboard() {
       setTotalPages(response.total_pages)
       setTotal(response.total)
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to create short URL")
+      const errorMessage = err instanceof Error ? err.message : "Failed to create short URL"
+      setError(errorMessage)
+      toast.error(errorMessage)
     } finally {
       setSubmitting(false)
     }
@@ -92,11 +96,10 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background pt-20">
+    <div className="min-h-screen bg-background">
       <Navbar />
-      <div className="p-8">
-        <div className="max-w-6xl mx-auto space-y-8">
-          <h1 className="text-4xl font-bold">Dashboard</h1>
+      <div className="px-6 md:px-8 lg:px-12 pb-6 md:pb-8 lg:pb-12 pt-24 transition-colors duration-300">
+        <div className="max-w-7xl mx-auto w-full space-y-8">
 
           {/* Section 1: Create Short URL */}
           <Card>
@@ -107,31 +110,29 @@ export function Dashboard() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleSubmit} className="space-y-4">
+              <form onSubmit={handleSubmit} className="space-y-2">
                 {error && (
-                  <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                  <div className="p-3 text-sm text-red-400 bg-red-950/20 border border-red-900/50">
                     {error}
                   </div>
                 )}
                 {success && (
-                  <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
+                  <div className="p-3 text-sm text-emerald-400 bg-emerald-950/20 border border-emerald-900/50">
                     {success}
                   </div>
                 )}
                 {/* Form inputs: stacked on mobile, inline on desktop */}
-                <div className="flex flex-col md:flex-row gap-3 md:items-end">
+                <div className="flex flex-col sm:flex-row gap-0">
                   {/* Domain select */}
-                  <div className="flex-1 min-w-0">
-                    <label htmlFor="domain" className="block text-sm font-medium mb-1.5 md:hidden">
-                      Domain
-                    </label>
+                  <div className="relative flex items-center min-w-[140px] bg-input border border-border sm:border-r-0 h-[57px]">
                     <select
                       id="domain"
                       value={selectedDomain}
                       onChange={(e) => setSelectedDomain(e.target.value)}
                       required
-                      className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                      className="w-full h-full appearance-none bg-transparent text-foreground pl-4 pr-10 focus:outline-none cursor-pointer text-sm"
                       disabled={submitting || domains.length === 0}
+                      style={{ colorScheme: 'dark' }}
                     >
                       {domains.map((domain) => (
                         <option key={domain} value={domain}>
@@ -139,59 +140,62 @@ export function Dashboard() {
                         </option>
                       ))}
                     </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                    />
                   </div>
                   
                   {/* URL input */}
-                  <div className="flex-[2] min-w-0">
-                    <label htmlFor="url" className="block text-sm font-medium mb-1.5 md:hidden">
-                      URL <span className="text-red-500">*</span>
-                    </label>
-                    <input
-                      id="url"
-                      type="url"
-                      value={url}
-                      onChange={(e) => setUrl(e.target.value)}
-                      required
-                      placeholder="https://example.com"
-                      className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                      disabled={submitting}
-                    />
-                  </div>
+                  <input
+                    id="url"
+                    type="url"
+                    value={url}
+                    onChange={(e) => setUrl(e.target.value)}
+                    required
+                    placeholder="https://example.com/long-url"
+                    className="flex-1 p-4 bg-input text-foreground border-y sm:border-y border-x sm:border-l border-t-0 sm:border-t border-border focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-muted-foreground text-sm h-[57px]"
+                    disabled={submitting}
+                  />
                   
                   {/* Slug input */}
-                  <div className="flex-1 min-w-0">
-                    <label htmlFor="slug" className="block text-sm font-medium mb-1.5 md:hidden">
-                      Custom Slug <span className="text-muted-foreground font-normal">(optional)</span>
-                    </label>
-                    <input
-                      id="slug"
-                      type="text"
-                      value={slug}
-                      onChange={(e) => setSlug(e.target.value)}
-                      placeholder="Custom slug (optional)"
-                      className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                      disabled={submitting}
-                    />
-                  </div>
+                  <input
+                    id="slug"
+                    type="text"
+                    value={slug}
+                    onChange={(e) => setSlug(e.target.value)}
+                    placeholder="Custom slug (optional)"
+                    className="flex-1 min-w-[120px] p-4 bg-input text-foreground border-y sm:border-y border-x sm:border-l border-t-0 sm:border-t border-border focus:outline-none focus:border-emerald-500 transition-colors placeholder:text-muted-foreground text-sm h-[57px]"
+                    disabled={submitting}
+                  />
                   
                   {/* Submit button */}
-                  <div className="flex md:flex-shrink-0">
-                    <Button 
-                      type="submit" 
-                      disabled={submitting}
-                      className="w-full md:w-auto whitespace-nowrap"
-                    >
-                      <Scissors className="mr-2 h-4 w-4" />
-                      {submitting ? "Creating..." : "Shorten"}
-                    </Button>
-                  </div>
+                  <Button 
+                    type="submit" 
+                    disabled={submitting}
+                    className="bg-emerald-500 hover:bg-emerald-400 text-black px-6 h-[57px] font-bold flex items-center justify-center gap-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed whitespace-nowrap"
+                  >
+                    {submitting ? (
+                      <>
+                        <Scissors className="h-4 w-4 animate-pulse" />
+                        <span className="hidden sm:inline">Processing</span>
+                        <span className="sm:hidden">Processing</span>
+                      </>
+                    ) : (
+                      <>
+                        <Scissors className="h-4 w-4" />
+                        <span className="hidden sm:inline">Shorten</span>
+                        <span className="sm:hidden">Shorten Link</span>
+                      </>
+                    )}
+                  </Button>
                 </div>
               </form>
             </CardContent>
           </Card>
 
           {/* Section 2: Short URLs List */}
-          <Card>
+          <Card className="bg-white dark:bg-background border-0">
             <CardHeader>
               <CardTitle>Your Short URLs</CardTitle>
               <CardDescription>
@@ -200,9 +204,9 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               {loading ? (
-                <div className="text-center py-8 text-muted-foreground">Loading...</div>
+                <div className="text-center py-8 text-muted-foreground text-sm">Loading...</div>
               ) : shortURLs.length === 0 ? (
-                <div className="text-center py-8 text-muted-foreground">
+                <div className="text-center py-8 text-muted-foreground text-sm leading-relaxed">
                   No shortened URLs found. Create your first one above!
                 </div>
               ) : (
@@ -210,24 +214,24 @@ export function Dashboard() {
                   <div className="overflow-x-auto">
                     <table className="w-full border-collapse">
                       <thead>
-                        <tr className="border-b">
-                          <th className="text-left p-3 font-medium">Short URL</th>
-                          <th className="text-left p-3 font-medium">Original URL</th>
-                          <th className="text-left p-3 font-medium">Domain</th>
-                          <th className="text-left p-3 font-medium">Slug</th>
-                          <th className="text-left p-3 font-medium">Created</th>
-                          <th className="text-left p-3 font-medium">Actions</th>
+                        <tr className="border-b border-border">
+                          <th className="text-left p-3 font-bold text-sm">Short URL</th>
+                          <th className="text-left p-3 font-bold text-sm">Original URL</th>
+                          <th className="text-left p-3 font-bold text-sm">Domain</th>
+                          <th className="text-left p-3 font-bold text-sm">Slug</th>
+                          <th className="text-left p-3 font-bold text-sm">Created</th>
+                          <th className="text-left p-3 font-bold text-sm">Actions</th>
                         </tr>
                       </thead>
                       <tbody>
                         {shortURLs.map((shortURL) => (
-                          <tr key={shortURL.id} className="border-b hover:bg-muted/50">
+                          <tr key={shortURL.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                             <td className="p-3">
                               <a
                                 href={`http://${shortURL.domain}/${shortURL.slug}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary hover:underline"
+                                className="text-emerald-500 hover:text-emerald-400 hover:underline text-sm"
                               >
                                 {shortURL.domain}/{shortURL.slug}
                               </a>
@@ -237,19 +241,19 @@ export function Dashboard() {
                                 href={shortURL.url}
                                 target="_blank"
                                 rel="noopener noreferrer"
-                                className="text-primary hover:underline truncate max-w-md block"
+                                className="text-emerald-500 hover:text-emerald-400 hover:underline truncate max-w-md block text-sm"
                                 title={shortURL.url}
                               >
                                 {shortURL.url}
                               </a>
                             </td>
-                            <td className="p-3 text-muted-foreground">{shortURL.domain}</td>
+                            <td className="p-3 text-muted-foreground text-sm">{shortURL.domain}</td>
                             <td className="p-3 text-muted-foreground font-mono text-sm">{shortURL.slug}</td>
-                            <td className="p-3 text-muted-foreground">{formatDate(shortURL.created_at)}</td>
+                            <td className="p-3 text-muted-foreground text-sm">{formatDate(shortURL.created_at)}</td>
                             <td className="p-3">
                               <Link to={`/short-urls/${shortURL.id}`}>
-                                <Button variant="outline" size="icon" title="View More">
-                                  <Eye className="h-4 w-4" />
+                                <Button variant="outline" size="icon" title="View More" className="h-8 w-8">
+                                  <Eye className="h-3.5 w-3.5" />
                                 </Button>
                               </Link>
                             </td>
@@ -259,8 +263,8 @@ export function Dashboard() {
                     </table>
                   </div>
                   {totalPages > 1 && (
-                    <div className="flex items-center justify-between mt-6">
-                      <div className="text-sm text-muted-foreground">
+                    <div className="flex items-center justify-between mt-6 pt-4 border-t border-border">
+                      <div className="text-xs text-muted-foreground uppercase tracking-wider">
                         Page {currentPage} of {totalPages}
                       </div>
                       <div className="flex gap-2">
@@ -269,8 +273,9 @@ export function Dashboard() {
                           size="sm"
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                           disabled={currentPage === 1 || loading}
+                          className="text-xs uppercase tracking-wider"
                         >
-                          <ChevronLeft className="mr-2 h-4 w-4" />
+                          <ChevronLeft className="mr-2 h-3.5 w-3.5" />
                           Previous
                         </Button>
                         <Button
@@ -278,9 +283,10 @@ export function Dashboard() {
                           size="sm"
                           onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                           disabled={currentPage === totalPages || loading}
+                          className="text-xs uppercase tracking-wider"
                         >
                           Next
-                          <ChevronRight className="ml-2 h-4 w-4" />
+                          <ChevronRight className="ml-2 h-3.5 w-3.5" />
                         </Button>
                       </div>
                     </div>
