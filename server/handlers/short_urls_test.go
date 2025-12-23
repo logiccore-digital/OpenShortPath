@@ -492,9 +492,10 @@ func TestShortURLsHandler_Delete_Success(t *testing.T) {
 
 	// Mock delete query (GORM uses primary key from struct - ID field)
 	// GORM generates: DELETE FROM "short_urls" WHERE "short_urls"."id" = $1
+	// GORM may use a transaction for Delete operations
 	mock.ExpectBegin()
 	mock.ExpectExec(`DELETE FROM "short_urls"`).
-		WithArgs(sqlmock.AnyArg()). // Use AnyArg to be more flexible with GORM's query generation
+		WithArgs(id).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
