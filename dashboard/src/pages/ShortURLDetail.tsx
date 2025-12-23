@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
+import { ArrowLeft, Edit, Trash2, Save, X } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/Navbar"
@@ -167,6 +168,7 @@ export function ShortURLDetail() {
                 <div className="text-center py-8">
                   <p className="text-red-600 mb-4">{error}</p>
                   <Button onClick={() => navigate("/")} variant="outline">
+                    <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Dashboard
                   </Button>
                 </div>
@@ -191,6 +193,7 @@ export function ShortURLDetail() {
             <div className="flex items-center justify-between">
               <h1 className="text-4xl font-bold">Short URL Details</h1>
               <Button onClick={() => navigate("/")} variant="outline">
+                <ArrowLeft className="mr-2 h-4 w-4" />
                 Back to Dashboard
               </Button>
             </div>
@@ -216,13 +219,33 @@ export function ShortURLDetail() {
                       View and edit details for your shortened URL
                     </CardDescription>
                   </div>
-                  {!isEditing && (
+                  {!isEditing ? (
                     <div className="flex gap-2">
                       <Button onClick={handleEdit} variant="outline">
+                        <Edit className="mr-2 h-4 w-4" />
                         Edit
                       </Button>
                       <Button onClick={handleDeleteClick} variant="destructive">
+                        <Trash2 className="mr-2 h-4 w-4" />
                         Delete
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={handleSave}
+                        disabled={submitting}
+                      >
+                        <Save className="mr-2 h-4 w-4" />
+                        {submitting ? "Saving..." : "Save"}
+                      </Button>
+                      <Button
+                        onClick={handleCancel}
+                        variant="outline"
+                        disabled={submitting}
+                      >
+                        <X className="mr-2 h-4 w-4" />
+                        Cancel
                       </Button>
                     </div>
                   )}
@@ -349,24 +372,6 @@ export function ShortURLDetail() {
                     </div>
                   </div>
                 </div>
-
-                {isEditing && (
-                  <div className="flex gap-3 pt-4">
-                    <Button
-                      onClick={handleSave}
-                      disabled={submitting}
-                    >
-                      {submitting ? "Saving..." : "Save"}
-                    </Button>
-                    <Button
-                      onClick={handleCancel}
-                      variant="outline"
-                      disabled={submitting}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                )}
               </CardContent>
             </Card>
           </div>

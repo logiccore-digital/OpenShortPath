@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
+import { Scissors, Eye, ChevronLeft, ChevronRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/Navbar"
@@ -180,6 +181,7 @@ export function Dashboard() {
                       disabled={submitting}
                       className="w-full md:w-auto whitespace-nowrap"
                     >
+                      <Scissors className="mr-2 h-4 w-4" />
                       {submitting ? "Creating..." : "Shorten"}
                     </Button>
                   </div>
@@ -246,8 +248,8 @@ export function Dashboard() {
                             <td className="p-3 text-muted-foreground">{formatDate(shortURL.created_at)}</td>
                             <td className="p-3">
                               <Link to={`/short-urls/${shortURL.id}`}>
-                                <Button variant="outline" size="sm">
-                                  View More
+                                <Button variant="outline" size="icon" title="View More">
+                                  <Eye className="h-4 w-4" />
                                 </Button>
                               </Link>
                             </td>
@@ -268,6 +270,7 @@ export function Dashboard() {
                           onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                           disabled={currentPage === 1 || loading}
                         >
+                          <ChevronLeft className="mr-2 h-4 w-4" />
                           Previous
                         </Button>
                         <Button
@@ -277,6 +280,7 @@ export function Dashboard() {
                           disabled={currentPage === totalPages || loading}
                         >
                           Next
+                          <ChevronRight className="ml-2 h-4 w-4" />
                         </Button>
                       </div>
                     </div>
