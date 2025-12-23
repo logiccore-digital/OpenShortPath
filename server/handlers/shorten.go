@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 
 	"openshortpath/server/config"
@@ -117,8 +118,12 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 		}
 	}
 
+	// Generate UUID for ID field
+	id := uuid.New().String()
+
 	// Create new ShortURL record
 	shortURL := models.ShortURL{
+		ID:     id,
 		Domain: req.Domain,
 		Slug:   slug,
 		URL:    req.URL,

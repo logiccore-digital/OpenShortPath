@@ -38,7 +38,7 @@ func TestShortenHandler_Shorten_Success(t *testing.T) {
 	// Second query: insert new record
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs("example.com", sqlmock.AnyArg(), "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -56,7 +56,7 @@ func TestShortenHandler_Shorten_Success(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusCreated, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -84,7 +84,7 @@ func TestShortenHandler_Shorten_WithJWTToken(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs("example.com", sqlmock.AnyArg(), "https://example.com/target", "user123", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "user123", sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -103,7 +103,7 @@ func TestShortenHandler_Shorten_WithJWTToken(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusCreated, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -129,7 +129,7 @@ func TestShortenHandler_Shorten_WithCustomSlug(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs("example.com", "custom-slug", "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", "custom-slug", "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -147,7 +147,7 @@ func TestShortenHandler_Shorten_WithCustomSlug(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusCreated, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -180,7 +180,7 @@ func TestShortenHandler_Shorten_InvalidRequestBody(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -212,7 +212,7 @@ func TestShortenHandler_Shorten_InvalidDomain(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusBadRequest, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -253,7 +253,7 @@ func TestShortenHandler_Shorten_DuplicateSlug(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusConflict, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -291,7 +291,7 @@ func TestShortenHandler_Shorten_DatabaseErrorOnCheck(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -317,7 +317,7 @@ func TestShortenHandler_Shorten_DatabaseErrorOnInsert(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs("example.com", sqlmock.AnyArg(), "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnError(sql.ErrConnDone)
 	mock.ExpectRollback()
 
@@ -335,7 +335,7 @@ func TestShortenHandler_Shorten_DatabaseErrorOnInsert(t *testing.T) {
 
 	// Assert
 	assert.Equal(t, http.StatusInternalServerError, w.Code)
-	
+
 	var response map[string]interface{}
 	err := json.Unmarshal(w.Body.Bytes(), &response)
 	assert.NoError(t, err)
@@ -377,4 +377,3 @@ func TestShortenHandler_Shorten_MissingRequiredFields(t *testing.T) {
 	handler.Shorten(c2)
 	assert.Equal(t, http.StatusBadRequest, w2.Code)
 }
-

@@ -105,6 +105,23 @@ func main() {
 		log.Printf("Admin endpoints enabled at /api/v1/__admin/*")
 	}
 
+	// Register short URL management endpoints if JWT config is provided
+	if cfg.JWT != nil {
+		jwtMiddleware := middleware.NewJWTMiddleware(cfg.JWT)
+		shortURLsHandler := handlers.NewShortURLsHandler(db, cfg)
+
+		// Create route group with required authentication middleware
+		shortURLsRoutes := r.Group("/api/v1/short-urls")
+		shortURLsRoutes.Use(jwtMiddleware.RequireAuth())
+
+		// Register short URL management routes
+		shortURLsRoutes.GET("", shortURLsHandler.List)
+		shortURLsRoutes.PUT("/:id", shortURLsHandler.Update)
+		shortURLsRoutes.DELETE("/:id", shortURLsHandler.Delete)
+
+		log.Printf("Short URL management endpoints enabled at /api/v1/short-urls/*")
+	}
+
 	// Start server
 	port := os.Getenv("PORT")
 	if port == "" {
