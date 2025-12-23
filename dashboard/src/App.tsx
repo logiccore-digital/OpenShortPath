@@ -1,14 +1,18 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
+import { Toaster } from "sonner"
 import { Dashboard } from "./pages/Dashboard"
 import { Login } from "./pages/Login"
 import { ShortURLDetail } from "./pages/ShortURLDetail"
 import { Account } from "./pages/Account"
 import { ProtectedRoute } from "./components/ProtectedRoute"
+import { ThemeProvider } from "./components/theme/ThemeProvider"
 
 function App() {
   return (
-    <BrowserRouter basename="/dashboard">
-      <Routes>
+    <ThemeProvider>
+      <BrowserRouter basename="/dashboard">
+        <Toaster position="bottom-right" richColors />
+        <Routes>
         <Route path="/login" element={<Login />} />
         <Route
           path="/"
@@ -42,8 +46,9 @@ function App() {
             </ProtectedRoute>
           }
         />
-      </Routes>
-    </BrowserRouter>
+        </Routes>
+      </BrowserRouter>
+    </ThemeProvider>
   )
 }
 
