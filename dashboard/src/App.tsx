@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom"
-import { Placeholder } from "./pages/Placeholder"
+import { Dashboard } from "./pages/Dashboard"
 import { Login } from "./pages/Login"
+import { ShortURLDetail } from "./pages/ShortURLDetail"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 
 function App() {
@@ -12,7 +13,15 @@ function App() {
           path="/"
           element={
             <ProtectedRoute>
-              <Placeholder />
+              <Dashboard />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/short-urls/:id"
+          element={
+            <ProtectedRoute>
+              <ShortURLDetail />
             </ProtectedRoute>
           }
         />
@@ -20,7 +29,7 @@ function App() {
           path="*"
           element={
             <ProtectedRoute>
-              <Placeholder />
+              <Dashboard />
             </ProtectedRoute>
           }
         />

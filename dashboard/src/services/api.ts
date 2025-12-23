@@ -7,6 +7,7 @@ import {
   ListShortURLsResponse,
   UpdateShortURLRequest,
   ApiError,
+  DomainsResponse,
 } from "../types/api"
 import { getStoredToken, removeStoredToken } from "../lib/auth"
 
@@ -91,6 +92,14 @@ export async function getAuthProvider(): Promise<AuthProviderResponse> {
 }
 
 /**
+ * Get list of available domains for shortening
+ */
+export async function getDomains(): Promise<string[]> {
+  const response = await apiRequest<DomainsResponse>("/domains")
+  return response.domains
+}
+
+/**
  * Login with username and password (local auth only)
  */
 export async function login(username: string, password: string): Promise<LoginResponse> {
@@ -128,6 +137,13 @@ export async function listShortURLs(
     limit: limit.toString(),
   })
   return apiRequest<ListShortURLsResponse>(`/short-urls?${params.toString()}`)
+}
+
+/**
+ * Get a single short URL by ID
+ */
+export async function getShortURL(id: string): Promise<ShortURL> {
+  return apiRequest<ShortURL>(`/short-urls/${id}`)
 }
 
 /**

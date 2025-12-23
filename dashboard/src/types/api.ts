@@ -48,3 +48,7 @@ export interface ApiError {
   details?: string
 }
 
+export interface DomainsResponse {
+  domains: string[]
+}
+
