@@ -60,3 +60,24 @@ export interface UserResponse {
   updated_at: string
 }
 
+export interface CreateAPIKeyRequest {
+  scopes: string[]
+}
+
+export interface CreateAPIKeyResponse {
+  id: string
+  key: string
+  scopes: string[]
+  created_at: string
+}
+
+export interface APIKeyListItem {
+  id: string
+  scopes: string[]
+  created_at: string
+}
+
+export interface ListAPIKeysResponse {
+  keys: APIKeyListItem[]
+}
+

@@ -3,8 +3,16 @@ import { cva, type VariantProps } from "class-variance-authority"
 
 import { cn } from "@/lib/utils"
 
+/**
+ * Button component variants.
+ * 
+ * IMPORTANT: All buttons in the dashboard must have NO rounded corners.
+ * The `rounded-none` class is applied in the base classes to enforce this.
+ * Do NOT add any rounded corner classes (rounded-sm, rounded-md, rounded-lg, etc.)
+ * to button variants or individual button instances.
+ */
 const buttonVariants = cva(
-  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50",
+  "inline-flex items-center justify-center whitespace-nowrap text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 rounded-none",
   {
     variants: {
       variant: {
@@ -20,8 +28,8 @@ const buttonVariants = cva(
       },
       size: {
         default: "h-10 px-4 py-2",
-        sm: "h-9 rounded-md px-3",
-        lg: "h-11 rounded-md px-8",
+        sm: "h-9 px-3",
+        lg: "h-11 px-8",
         icon: "h-10 w-10",
       },
     },
