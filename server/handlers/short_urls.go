@@ -132,6 +132,54 @@ func (h *ShortURLsHandler) List(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+// Get returns a single shortened URL by ID
+func (h *ShortURLsHandler) Get(c *gin.Context) {
+	// Get user ID from context
+	userIDValue, exists := c.Get(constants.ContextKeyUserID)
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "User ID not found in context",
+		})
+		return
+	}
+
+	userID, ok := userIDValue.(string)
+	if !ok || userID == "" {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"error": "Invalid user ID in context",
+		})
+		return
+	}
+
+	// Get ID from URL parameter
+	id := c.Param("id")
+	if id == "" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "ID parameter is required",
+		})
+		return
+	}
+
+	// Find the ShortURL by ID and user_id
+	var shortURL models.ShortURL
+	result := h.db.Where("id = ? AND user_id = ?", id, userID).First(&shortURL)
+	if result.Error != nil {
+		if result.Error == gorm.ErrRecordNotFound {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Short URL not found",
+			})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Database error",
+			"details": result.Error.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, shortURL)
+}
+
 // Update updates a shortened URL by ID
 func (h *ShortURLsHandler) Update(c *gin.Context) {
 	// Get user ID from context
