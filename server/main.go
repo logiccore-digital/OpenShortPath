@@ -55,7 +55,7 @@ func main() {
 	}
 
 	// Auto-migrate database models
-	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}); err != nil {
+	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}, &models.APIKey{}); err != nil {
 		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 
@@ -68,10 +68,15 @@ func main() {
 	r := gin.Default()
 
 	// Initialize JWT middleware if JWT config is provided
+	var jwtMiddleware *middleware.JWTMiddleware
+	var apiKeyMiddleware *middleware.APIKeyMiddleware
 	if cfg.JWT != nil {
-		jwtMiddleware := middleware.NewJWTMiddleware(cfg.JWT)
+		jwtMiddleware = middleware.NewJWTMiddleware(cfg.JWT)
+		apiKeyMiddleware = middleware.NewAPIKeyMiddleware(db)
+		jwtMiddleware.SetAPIKeyMiddleware(apiKeyMiddleware)
 		r.Use(jwtMiddleware.OptionalAuth())
 		log.Printf("JWT authentication enabled (algorithm: %s)", cfg.JWT.Algorithm)
+		log.Printf("API key authentication enabled")
 	}
 
 	// Initialize handlers with database
@@ -90,7 +95,14 @@ func main() {
 	// Routes
 	r.GET("/", helloHandler.HelloWorld)
 	r.GET("/:slug", redirectHandler.Redirect)
-	r.POST("/api/v1/shorten", shortenHandler.Shorten)
+	
+	// Shorten endpoint - requires authentication and scope check
+	if cfg.JWT != nil {
+		r.POST("/api/v1/shorten", jwtMiddleware.RequireAuth(), middleware.RequireScope("shorten_url"), shortenHandler.Shorten)
+	} else {
+		r.POST("/api/v1/shorten", shortenHandler.Shorten)
+	}
+	
 	r.GET("/api/v1/auth-provider", authProviderHandler.GetAuthProvider)
 	r.GET("/api/v1/domains", domainsHandler.GetDomains)
 
@@ -121,18 +133,17 @@ func main() {
 
 	// Register short URL management endpoints if JWT config is provided
 	if cfg.JWT != nil {
-		jwtMiddleware := middleware.NewJWTMiddleware(cfg.JWT)
 		shortURLsHandler := handlers.NewShortURLsHandler(db, cfg)
 
 		// Create route group with required authentication middleware
 		shortURLsRoutes := r.Group("/api/v1/short-urls")
 		shortURLsRoutes.Use(jwtMiddleware.RequireAuth())
 
-		// Register short URL management routes
-		shortURLsRoutes.GET("", shortURLsHandler.List)
-		shortURLsRoutes.GET("/:id", shortURLsHandler.Get)
-		shortURLsRoutes.PUT("/:id", shortURLsHandler.Update)
-		shortURLsRoutes.DELETE("/:id", shortURLsHandler.Delete)
+		// Register short URL management routes with scope checks
+		shortURLsRoutes.GET("", middleware.RequireScope("read_urls"), shortURLsHandler.List)
+		shortURLsRoutes.GET("/:id", middleware.RequireScope("read_urls"), shortURLsHandler.Get)
+		shortURLsRoutes.PUT("/:id", middleware.RequireScope("write_urls"), shortURLsHandler.Update)
+		shortURLsRoutes.DELETE("/:id", middleware.RequireScope("write_urls"), shortURLsHandler.Delete)
 
 		log.Printf("Short URL management endpoints enabled at /api/v1/short-urls/*")
 
@@ -143,6 +154,16 @@ func main() {
 		meRoutes.GET("/me", meHandler.GetMe)
 
 		log.Printf("User endpoints enabled at /api/v1/me")
+
+		// Register API key management endpoints with JWT authentication
+		apiKeysHandler := handlers.NewAPIKeysHandler(db)
+		apiKeysRoutes := r.Group("/api/v1/api-keys")
+		apiKeysRoutes.Use(jwtMiddleware.RequireAuth())
+		apiKeysRoutes.POST("", apiKeysHandler.CreateAPIKey)
+		apiKeysRoutes.GET("", apiKeysHandler.ListAPIKeys)
+		apiKeysRoutes.DELETE("/:id", apiKeysHandler.DeleteAPIKey)
+
+		log.Printf("API key management endpoints enabled at /api/v1/api-keys/*")
 	}
 
 	// Start server
