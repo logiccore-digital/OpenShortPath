@@ -30,3 +30,6 @@ go.work
 
 db.sqlite
 config.yaml
+
+# Dashboard build artifacts (copied from dashboard/dist)
+dashboard-dist

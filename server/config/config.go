@@ -22,6 +22,7 @@ type Config struct {
 	AuthProvider          string   `yaml:"auth_provider"` // "external_jwt" or "local"
 	JWT                   *JWT     `yaml:"jwt,omitempty"`
 	AdminPassword         string   `yaml:"admin_password"` // Super long password for administrative purposes
+	DashboardDevServerURL string   `yaml:"dashboard_dev_server_url"` // URL for dashboard dev server (optional, for development)
 }
 
 func LoadConfig(configPath string) (*Config, error) {
