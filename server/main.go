@@ -78,6 +78,7 @@ func main() {
 	helloHandler := handlers.NewHelloHandler(db)
 	shortenHandler := handlers.NewShortenHandler(db, cfg)
 	redirectHandler := handlers.NewRedirectHandler(db, cfg)
+	authProviderHandler := handlers.NewAuthProviderHandler(cfg)
 
 	// Register dashboard route (must be before /:slug route to avoid conflicts)
 	dashboardHandler := handlers.NewDashboardHandler(cfg, dashboardFS)
@@ -89,6 +90,7 @@ func main() {
 	r.GET("/", helloHandler.HelloWorld)
 	r.GET("/:slug", redirectHandler.Redirect)
 	r.POST("/api/v1/shorten", shortenHandler.Shorten)
+	r.GET("/api/v1/auth-provider", authProviderHandler.GetAuthProvider)
 
 	// Register login endpoint only if auth_provider is "local"
 	if cfg.AuthProvider == "local" {
