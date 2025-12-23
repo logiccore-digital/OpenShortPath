@@ -14,13 +14,12 @@ export function CodeSnippet() {
     let codeToCopy = "";
     if (activeTab === "curl") {
       codeToCopy = `curl -X POST https://api.lcd.sh/new \\
-  -H "Authorization: Bearer <token>" \\
-  -d "url=https://github.com/openshortpath" \\
-  -d "domain=${selectedDomain}"`;
+  -H "Content-Type: application/json" \\
+  -d '{"url": "https://github.com/openshortpath", "domain": "${selectedDomain}"}'`;
     } else {
       codeToCopy = `const res = await fetch('https://api.lcd.sh/new', {
   method: 'POST',
-  headers: { 'Authorization': 'Bearer <token>' },
+  headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({
     url: '...',
     domain: '${selectedDomain}'
@@ -80,17 +79,12 @@ export function CodeSnippet() {
                 https://api.lcd.sh/new \<br />
                 &nbsp;&nbsp;-H{" "}
                 <span className={theme.code.attr}>
-                  &quot;Authorization: Bearer &lt;token&gt;&quot;
+                  &quot;Content-Type: application/json&quot;
                 </span>{" "}
                 \<br />
                 &nbsp;&nbsp;-d{" "}
                 <span className={theme.code.string}>
-                  &quot;url=https://github.com/openshortpath&quot;
-                </span>{" "}
-                \<br />
-                &nbsp;&nbsp;-d{" "}
-                <span className={theme.code.string}>
-                  &quot;domain={selectedDomain}&quot;
+                  &apos;{`{"url": "https://github.com/openshortpath", "domain": "${selectedDomain}"}`}&apos;
                 </span>
               </code>
             </pre>
@@ -109,11 +103,11 @@ export function CodeSnippet() {
                 <br />
                 &nbsp;&nbsp;headers: {"{"}{" "}
                 <span className={theme.code.string}>
-                  &apos;Authorization&apos;
+                  &apos;Content-Type&apos;
                 </span>
                 :{" "}
                 <span className={theme.code.string}>
-                  &apos;Bearer &lt;token&gt;&apos;
+                  &apos;application/json&apos;
                 </span>{" "}
                 {"}"},<br />
                 &nbsp;&nbsp;body: JSON.stringify({"{"}
@@ -140,6 +134,9 @@ export function CodeSnippet() {
           {copied ? <Check size={12} /> : <Copy size={12} />}
           {copied ? "Copied to clipboard" : "Copy snippet"}
         </button>
+        <p className={`mt-3 text-xs ${theme.subtext}`}>
+          Without an account, you have a rate limit of 5 per hour per IP, in addition to 1000 links per IP per month.
+        </p>
       </div>
     </div>
   );
