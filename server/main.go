@@ -1,6 +1,7 @@
 package main
 
 import (
+	"embed"
 	"flag"
 	"fmt"
 	"log"
@@ -16,6 +17,9 @@ import (
 	"openshortpath/server/middleware"
 	"openshortpath/server/models"
 )
+
+//go:embed dashboard-dist
+var dashboardFS embed.FS
 
 func main() {
 	// Parse command-line flags
@@ -75,6 +79,12 @@ func main() {
 	shortenHandler := handlers.NewShortenHandler(db, cfg)
 	redirectHandler := handlers.NewRedirectHandler(db, cfg)
 
+	// Register dashboard route (must be before /:slug route to avoid conflicts)
+	dashboardHandler := handlers.NewDashboardHandler(cfg, dashboardFS)
+	r.Any("/dashboard", dashboardHandler.ServeDashboard)       // Match /dashboard exactly
+	r.Any("/dashboard/*path", dashboardHandler.ServeDashboard) // Match /dashboard/*
+	log.Printf("Dashboard enabled at /dashboard/*")
+
 	// Routes
 	r.GET("/", helloHandler.HelloWorld)
 	r.GET("/:slug", redirectHandler.Redirect)
@@ -133,4 +143,3 @@ func main() {
 		log.Fatalf("Failed to start server: %v", err)
 	}
 }
-

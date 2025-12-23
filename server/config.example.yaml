@@ -77,3 +77,8 @@ port: 3000
 # Pass this as a Bearer token in the Authorization header: Authorization: Bearer <admin_password>
 # admin_password: change-this-to-a-super-long-random-password-at-least-128-characters-long-for-security-purposes-use-a-password-manager-to-generate-a-strong-random-password
 
+# Dashboard development server URL (optional)
+# If provided, the /dashboard route will proxy requests to this URL instead of serving embedded files
+# This is useful for development. Leave empty or unset to use embedded dashboard files.
+# dashboard_dev_server_url: http://localhost:5173
+
