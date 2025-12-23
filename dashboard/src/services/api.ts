@@ -9,6 +9,9 @@ import {
   ApiError,
   DomainsResponse,
   UserResponse,
+  CreateAPIKeyRequest,
+  CreateAPIKeyResponse,
+  ListAPIKeysResponse,
 } from "../types/api"
 import { getStoredToken, removeStoredToken } from "../lib/auth"
 
@@ -174,5 +177,32 @@ export async function deleteShortURL(id: string): Promise<void> {
  */
 export async function getMe(): Promise<UserResponse> {
   return apiRequest<UserResponse>("/me")
+}
+
+/**
+ * Create a new API key
+ */
+export async function createAPIKey(scopes: string[]): Promise<CreateAPIKeyResponse> {
+  const request: CreateAPIKeyRequest = { scopes }
+  return apiRequest<CreateAPIKeyResponse>("/api-keys", {
+    method: "POST",
+    body: JSON.stringify(request),
+  })
+}
+
+/**
+ * List user's API keys
+ */
+export async function listAPIKeys(): Promise<ListAPIKeysResponse> {
+  return apiRequest<ListAPIKeysResponse>("/api-keys")
+}
+
+/**
+ * Delete an API key by ID
+ */
+export async function deleteAPIKey(id: string): Promise<void> {
+  return apiRequest<void>(`/api-keys/${id}`, {
+    method: "DELETE",
+  })
 }
 
