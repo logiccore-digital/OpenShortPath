@@ -8,6 +8,7 @@ import {
   UpdateShortURLRequest,
   ApiError,
   DomainsResponse,
+  UserResponse,
 } from "../types/api"
 import { getStoredToken, removeStoredToken } from "../lib/auth"
 
@@ -166,5 +167,12 @@ export async function deleteShortURL(id: string): Promise<void> {
   return apiRequest<void>(`/short-urls/${id}`, {
     method: "DELETE",
   })
+}
+
+/**
+ * Get current authenticated user's information
+ */
+export async function getMe(): Promise<UserResponse> {
+  return apiRequest<UserResponse>("/me")
 }
 

@@ -52,3 +52,11 @@ export interface DomainsResponse {
   domains: string[]
 }
 
+export interface UserResponse {
+  user_id: string
+  username?: string
+  active: boolean
+  created_at: string
+  updated_at: string
+}
+

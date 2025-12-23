@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Dashboard } from "./pages/Dashboard"
 import { Login } from "./pages/Login"
 import { ShortURLDetail } from "./pages/ShortURLDetail"
+import { Account } from "./pages/Account"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 
 function App() {
@@ -22,6 +23,14 @@ function App() {
           element={
             <ProtectedRoute>
               <ShortURLDetail />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/account"
+          element={
+            <ProtectedRoute>
+              <Account />
             </ProtectedRoute>
           }
         />
