@@ -145,7 +145,7 @@ export function ShortURLDetail() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-20">
         <Navbar />
         <div className="p-8">
           <div className="max-w-4xl mx-auto">
@@ -158,7 +158,7 @@ export function ShortURLDetail() {
 
   if (error && !shortURL) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-background pt-20">
         <Navbar />
         <div className="p-8">
           <div className="max-w-4xl mx-auto">
@@ -183,240 +183,242 @@ export function ShortURLDetail() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <Navbar />
-      <div className="p-8">
-        <div className="max-w-4xl mx-auto space-y-6">
-          <div className="flex items-center justify-between">
-            <h1 className="text-4xl font-bold">Short URL Details</h1>
-            <Button onClick={() => navigate("/")} variant="outline">
-              Back to Dashboard
-            </Button>
-          </div>
-
-          {error && (
-            <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-              {error}
+    <>
+      <div className="min-h-screen bg-background pt-20">
+        <Navbar />
+        <div className="p-8">
+          <div className="max-w-4xl mx-auto space-y-6">
+            <div className="flex items-center justify-between">
+              <h1 className="text-4xl font-bold">Short URL Details</h1>
+              <Button onClick={() => navigate("/")} variant="outline">
+                Back to Dashboard
+              </Button>
             </div>
-          )}
 
-          {success && (
-            <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
-              {success}
-            </div>
-          )}
-
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle>Short URL Information</CardTitle>
-                  <CardDescription>
-                    View and edit details for your shortened URL
-                  </CardDescription>
-                </div>
-                {!isEditing && (
-                  <div className="flex gap-2">
-                    <Button onClick={handleEdit} variant="outline">
-                      Edit
-                    </Button>
-                    <Button onClick={handleDeleteClick} variant="destructive">
-                      Delete
-                    </Button>
-                  </div>
-                )}
+            {error && (
+              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                {error}
               </div>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {isEditing && (
-                <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
+            )}
+
+            {success && (
+              <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
+                {success}
+              </div>
+            )}
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Short URL Information</CardTitle>
+                    <CardDescription>
+                      View and edit details for your shortened URL
+                    </CardDescription>
+                  </div>
+                  {!isEditing && (
+                    <div className="flex gap-2">
+                      <Button onClick={handleEdit} variant="outline">
+                        Edit
+                      </Button>
+                      <Button onClick={handleDeleteClick} variant="destructive">
+                        Delete
+                      </Button>
+                    </div>
+                  )}
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {isEditing && (
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-md">
                   <p className="text-sm text-yellow-800 font-medium">
                     Warning: Since we respond with 301 (Moved Permanently), users who have already visited this URL may not get the update.
                   </p>
                 </div>
-              )}
+                )}
 
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">ID</label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
-                    {shortURL.id}
+                <div className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">ID</label>
+                    <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
+                      {shortURL.id}
+                    </div>
                   </div>
-                </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Original URL <span className="text-red-500">*</span>
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="url"
-                      value={editedUrl}
-                      onChange={(e) => setEditedUrl(e.target.value)}
-                      className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                      required
-                    />
-                  ) : (
-                    <div className="px-3 py-2 bg-muted rounded-md text-sm break-all">
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">
+                      Original URL <span className="text-red-500">*</span>
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="url"
+                        value={editedUrl}
+                        onChange={(e) => setEditedUrl(e.target.value)}
+                        className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                        required
+                      />
+                    ) : (
+                      <div className="px-3 py-2 bg-muted rounded-md text-sm break-all">
+                        <a
+                          href={shortURL.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {shortURL.url}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">
+                      Domain <span className="text-red-500">*</span>
+                    </label>
+                    {isEditing ? (
+                      <select
+                        value={editedDomain}
+                        onChange={(e) => setEditedDomain(e.target.value)}
+                        className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                        required
+                      >
+                        {domains.map((domain) => (
+                          <option key={domain} value={domain}>
+                            {domain}
+                          </option>
+                        ))}
+                      </select>
+                    ) : (
+                      <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                        {shortURL.domain}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">
+                      Slug <span className="text-red-500">*</span>
+                    </label>
+                    {isEditing ? (
+                      <input
+                        type="text"
+                        value={editedSlug}
+                        onChange={(e) => setEditedSlug(e.target.value)}
+                        className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm font-mono"
+                        required
+                      />
+                    ) : (
+                      <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
+                        {shortURL.slug}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Short URL</label>
+                    <div className="px-3 py-2 bg-muted rounded-md text-sm">
                       <a
-                        href={shortURL.url}
+                        href={`http://${shortURL.domain}/${shortURL.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="text-primary hover:underline"
+                        className="text-primary hover:underline font-mono"
                       >
-                        {shortURL.url}
+                        {shortURL.domain}/{shortURL.slug}
                       </a>
                     </div>
-                  )}
-                </div>
+                  </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Domain <span className="text-red-500">*</span>
-                  </label>
-                  {isEditing ? (
-                    <select
-                      value={editedDomain}
-                      onChange={(e) => setEditedDomain(e.target.value)}
-                      className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
-                      required
-                    >
-                      {domains.map((domain) => (
-                        <option key={domain} value={domain}>
-                          {domain}
-                        </option>
-                      ))}
-                    </select>
-                  ) : (
-                    <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                      {shortURL.domain}
-                    </div>
-                  )}
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">
-                    Slug <span className="text-red-500">*</span>
-                  </label>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      value={editedSlug}
-                      onChange={(e) => setEditedSlug(e.target.value)}
-                      className="w-full px-3 py-2 border border-input bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm font-mono"
-                      required
-                    />
-                  ) : (
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">User ID</label>
                     <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
-                      {shortURL.slug}
+                      {shortURL.user_id}
                     </div>
-                  )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Created At</label>
+                    <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                      {formatDate(shortURL.created_at)}
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium mb-1.5">Updated At</label>
+                    <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                      {formatDate(shortURL.updated_at)}
+                    </div>
+                  </div>
                 </div>
 
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Short URL</label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    <a
-                      href={`http://${shortURL.domain}/${shortURL.slug}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline font-mono"
+                {isEditing && (
+                  <div className="flex gap-3 pt-4">
+                    <Button
+                      onClick={handleSave}
+                      disabled={submitting}
                     >
-                      {shortURL.domain}/{shortURL.slug}
-                    </a>
+                      {submitting ? "Saving..." : "Save"}
+                    </Button>
+                    <Button
+                      onClick={handleCancel}
+                      variant="outline"
+                      disabled={submitting}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Dialog */}
+      {showDeleteConfirm && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-[60]">
+          <Card className="max-w-md w-full mx-4">
+            <CardHeader>
+              <CardTitle>Delete Short URL</CardTitle>
+              <CardDescription>
+                Are you sure you want to delete this short URL? This action cannot be undone.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="p-3 bg-muted rounded-md">
+                  <div className="text-sm font-medium mb-1">Short URL:</div>
+                  <div className="text-sm font-mono text-muted-foreground">
+                    {shortURL.domain}/{shortURL.slug}
+                  </div>
+                  <div className="text-sm font-medium mb-1 mt-2">Original URL:</div>
+                  <div className="text-sm text-muted-foreground break-all">
+                    {shortURL.url}
                   </div>
                 </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">User ID</label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm font-mono">
-                    {shortURL.user_id}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Created At</label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    {formatDate(shortURL.created_at)}
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-1.5">Updated At</label>
-                  <div className="px-3 py-2 bg-muted rounded-md text-sm">
-                    {formatDate(shortURL.updated_at)}
-                  </div>
-                </div>
-              </div>
-
-              {isEditing && (
-                <div className="flex gap-3 pt-4">
+                <div className="flex gap-3">
                   <Button
-                    onClick={handleSave}
-                    disabled={submitting}
+                    onClick={handleDeleteConfirm}
+                    variant="destructive"
+                    disabled={deleting}
+                    className="flex-1"
                   >
-                    {submitting ? "Saving..." : "Save"}
+                    {deleting ? "Deleting..." : "Delete"}
                   </Button>
                   <Button
-                    onClick={handleCancel}
+                    onClick={handleDeleteCancel}
                     variant="outline"
-                    disabled={submitting}
+                    disabled={deleting}
+                    className="flex-1"
                   >
                     Cancel
                   </Button>
                 </div>
-              )}
+              </div>
             </CardContent>
           </Card>
-
-          {/* Delete Confirmation Dialog */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-              <Card className="max-w-md w-full mx-4">
-                <CardHeader>
-                  <CardTitle>Delete Short URL</CardTitle>
-                  <CardDescription>
-                    Are you sure you want to delete this short URL? This action cannot be undone.
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    <div className="p-3 bg-muted rounded-md">
-                      <div className="text-sm font-medium mb-1">Short URL:</div>
-                      <div className="text-sm font-mono text-muted-foreground">
-                        {shortURL.domain}/{shortURL.slug}
-                      </div>
-                      <div className="text-sm font-medium mb-1 mt-2">Original URL:</div>
-                      <div className="text-sm text-muted-foreground break-all">
-                        {shortURL.url}
-                      </div>
-                    </div>
-                    <div className="flex gap-3">
-                      <Button
-                        onClick={handleDeleteConfirm}
-                        variant="destructive"
-                        disabled={deleting}
-                        className="flex-1"
-                      >
-                        {deleting ? "Deleting..." : "Delete"}
-                      </Button>
-                      <Button
-                        onClick={handleDeleteCancel}
-                        variant="outline"
-                        disabled={deleting}
-                        className="flex-1"
-                      >
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          )}
         </div>
-      </div>
-    </div>
+      )}
+    </>
   )
 }
 

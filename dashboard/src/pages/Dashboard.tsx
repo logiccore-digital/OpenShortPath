@@ -91,7 +91,7 @@ export function Dashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background pt-20">
       <Navbar />
       <div className="p-8">
         <div className="max-w-6xl mx-auto space-y-8">

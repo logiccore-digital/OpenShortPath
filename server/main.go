@@ -135,6 +135,14 @@ func main() {
 		shortURLsRoutes.DELETE("/:id", shortURLsHandler.Delete)
 
 		log.Printf("Short URL management endpoints enabled at /api/v1/short-urls/*")
+
+		// Register user endpoints with required authentication middleware
+		meHandler := handlers.NewMeHandler(db)
+		meRoutes := r.Group("/api/v1")
+		meRoutes.Use(jwtMiddleware.RequireAuth())
+		meRoutes.GET("/me", meHandler.GetMe)
+
+		log.Printf("User endpoints enabled at /api/v1/me")
 	}
 
 	// Start server
