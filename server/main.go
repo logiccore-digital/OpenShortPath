@@ -51,7 +51,7 @@ func main() {
 	}
 
 	// Auto-migrate database models
-	if err := db.AutoMigrate(&models.ShortURL{}); err != nil {
+	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}); err != nil {
 		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 
@@ -79,6 +79,31 @@ func main() {
 	r.GET("/", helloHandler.HelloWorld)
 	r.GET("/:slug", redirectHandler.Redirect)
 	r.POST("/api/v1/shorten", shortenHandler.Shorten)
+
+	// Register login endpoint only if auth_provider is "local"
+	if cfg.AuthProvider == "local" {
+		loginHandler := handlers.NewLoginHandler(db, cfg.JWT)
+		r.POST("/api/v1/login", loginHandler.Login)
+		log.Printf("Login endpoint enabled at /api/v1/login")
+	}
+
+	// Register admin endpoints if admin password is configured
+	if cfg.AdminPassword != "" {
+		adminMiddleware := middleware.NewAdminMiddleware(cfg.AdminPassword)
+		adminUsersHandler := handlers.NewAdminUsersHandler(db)
+
+		// Create admin route group with authentication middleware
+		adminRoutes := r.Group("/api/v1/__admin")
+		adminRoutes.Use(adminMiddleware.RequireAdmin())
+
+		// Register admin user management routes
+		adminRoutes.POST("/users", adminUsersHandler.CreateUser)
+		adminRoutes.GET("/users", adminUsersHandler.ListUsers)
+		adminRoutes.PUT("/users/:user_id", adminUsersHandler.UpdateUser)
+		adminRoutes.DELETE("/users/:user_id", adminUsersHandler.DeleteUser)
+
+		log.Printf("Admin endpoints enabled at /api/v1/__admin/*")
+	}
 
 	// Start server
 	port := os.Getenv("PORT")
