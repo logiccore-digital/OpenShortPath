@@ -33,8 +33,8 @@ export function PricingSection() {
             <li className="flex gap-2">
               <Check size={14} className="opacity-70 shrink-0 mt-0.5" /> 1 Namespace
             </li>
-            <li className="flex gap-2 opacity-50">
-              <Command size={14} className="opacity-70 shrink-0 mt-0.5" /> No API/CLI Access
+            <li className="flex gap-2">
+              <Command size={14} className="opacity-70 shrink-0 mt-0.5" /> Limited API/CLI Access (5 per hour)
             </li>
             <li className="flex gap-2 opacity-50">
               <Command size={14} className="opacity-70 shrink-0 mt-0.5" /> No Webhooks
@@ -85,11 +85,14 @@ export function PricingSection() {
           <div className="space-y-3">
             <p className={`text-sm ${theme.subtext} max-w-md`}>
               Don&apos;t want a subscription? Pay a one-time fee to verify your identity. This unlocks full API/CLI
-              access with the standard 1,000 links/month limit.
+              access with the standard 1,000 links/month limit and removes the 5 per hour rate limit.
             </p>
             <ul className={`text-sm space-y-1 ${theme.subtext}`}>
               <li className="flex gap-2 items-center">
                 <Check size={12} className="text-emerald-500" /> Lifetime API Access
+              </li>
+              <li className="flex gap-2 items-center">
+                <Check size={12} className="text-emerald-500" /> No 5 per hour rate limit
               </li>
               <li className="flex gap-2 items-center">
                 <Check size={12} className="text-emerald-500" /> No recurring fees
