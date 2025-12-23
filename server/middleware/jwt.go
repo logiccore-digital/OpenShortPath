@@ -5,6 +5,7 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
+	"net/http"
 	"strings"
 
 	"openshortpath/server/config"
@@ -121,6 +122,56 @@ func (m *JWTMiddleware) validateToken(tokenString string) (string, error) {
 	}
 
 	return sub, nil
+}
+
+// RequireAuth is a middleware that requires JWT token authentication
+// If a valid token is provided, it extracts the 'sub' claim and stores it as 'user_id' in the context
+// If no token or invalid token is provided, it returns 401 Unauthorized
+func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Extract Bearer token from Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Missing Authorization header",
+			})
+			c.Abort()
+			return
+		}
+
+		// Check if it's a Bearer token
+		parts := strings.SplitN(authHeader, " ", 2)
+		if len(parts) != 2 || parts[0] != "Bearer" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Invalid Authorization header format. Expected: Bearer <token>",
+			})
+			c.Abort()
+			return
+		}
+
+		tokenString := parts[1]
+		if tokenString == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Missing token in Authorization header",
+			})
+			c.Abort()
+			return
+		}
+
+		// Parse and validate token
+		userID, err := m.validateToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Invalid or expired token",
+			})
+			c.Abort()
+			return
+		}
+
+		// Store user ID in context
+		c.Set(constants.ContextKeyUserID, userID)
+		c.Next()
+	}
 }
 
 // parseRSAPublicKey parses a PEM-encoded RSA public key

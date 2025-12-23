@@ -494,3 +494,248 @@ func TestJWTMiddleware_OptionalAuth_NilConfig(t *testing.T) {
 	assert.False(t, exists)
 }
 
+// RequireAuth tests
+func TestJWTMiddleware_RequireAuth_NoAuthorizationHeader(t *testing.T) {
+	// Setup
+	cfg := &config.JWT{
+		Algorithm: "HS256",
+		SecretKey: "test-secret-key",
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+
+	// Execute
+	handler(c)
+
+	// Assert - should return 401
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	_, exists := c.Get(constants.ContextKeyUserID)
+	assert.False(t, exists)
+	assert.True(t, c.IsAborted())
+}
+
+func TestJWTMiddleware_RequireAuth_InvalidAuthorizationFormat(t *testing.T) {
+	// Setup
+	cfg := &config.JWT{
+		Algorithm: "HS256",
+		SecretKey: "test-secret-key",
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Test cases
+	testCases := []struct {
+		name   string
+		header string
+	}{
+		{"No Bearer prefix", "token123"},
+		{"Wrong prefix", "Basic token123"},
+		{"Empty token", "Bearer "},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			gin.SetMode(gin.TestMode)
+			w := httptest.NewRecorder()
+			c, _ := gin.CreateTestContext(w)
+			c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+			c.Request.Header.Set("Authorization", tc.header)
+
+			handler(c)
+
+			assert.Equal(t, http.StatusUnauthorized, w.Code)
+			_, exists := c.Get(constants.ContextKeyUserID)
+			assert.False(t, exists)
+			assert.True(t, c.IsAborted())
+		})
+	}
+}
+
+func TestJWTMiddleware_RequireAuth_ValidHS256Token(t *testing.T) {
+	// Setup
+	secretKey := "test-secret-key"
+	cfg := &config.JWT{
+		Algorithm: "HS256",
+		SecretKey: secretKey,
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Generate valid token
+	tokenString, err := generateTestTokenHS256(secretKey, "user123")
+	assert.NoError(t, err)
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+	c.Request.Header.Set("Authorization", "Bearer "+tokenString)
+
+	// Execute
+	handler(c)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, w.Code)
+	userID, exists := c.Get(constants.ContextKeyUserID)
+	assert.True(t, exists)
+	assert.Equal(t, "user123", userID)
+	assert.False(t, c.IsAborted())
+}
+
+func TestJWTMiddleware_RequireAuth_ValidRS256Token(t *testing.T) {
+	// Setup
+	privateKey, publicKeyPEM := generateTestRSAKeyPair(t)
+	cfg := &config.JWT{
+		Algorithm: "RS256",
+		PublicKey: publicKeyPEM,
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Generate valid token
+	tokenString, err := generateTestTokenRS256(privateKey, "user456")
+	assert.NoError(t, err)
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+	c.Request.Header.Set("Authorization", "Bearer "+tokenString)
+
+	// Execute
+	handler(c)
+
+	// Assert
+	assert.Equal(t, http.StatusOK, w.Code)
+	userID, exists := c.Get(constants.ContextKeyUserID)
+	assert.True(t, exists)
+	assert.Equal(t, "user456", userID)
+	assert.False(t, c.IsAborted())
+}
+
+func TestJWTMiddleware_RequireAuth_InvalidTokenSignature(t *testing.T) {
+	// Setup
+	cfg := &config.JWT{
+		Algorithm: "HS256",
+		SecretKey: "test-secret-key",
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Generate token with wrong secret
+	wrongToken, err := generateTestTokenHS256("wrong-secret", "user123")
+	assert.NoError(t, err)
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+	c.Request.Header.Set("Authorization", "Bearer "+wrongToken)
+
+	// Execute
+	handler(c)
+
+	// Assert - should return 401
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	_, exists := c.Get(constants.ContextKeyUserID)
+	assert.False(t, exists)
+	assert.True(t, c.IsAborted())
+}
+
+func TestJWTMiddleware_RequireAuth_MissingSubClaim(t *testing.T) {
+	// Setup
+	secretKey := "test-secret-key"
+	cfg := &config.JWT{
+		Algorithm: "HS256",
+		SecretKey: secretKey,
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Generate token without sub claim
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"other": "claim",
+	})
+	tokenString, err := token.SignedString([]byte(secretKey))
+	assert.NoError(t, err)
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+	c.Request.Header.Set("Authorization", "Bearer "+tokenString)
+
+	// Execute
+	handler(c)
+
+	// Assert - should return 401
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	_, exists := c.Get(constants.ContextKeyUserID)
+	assert.False(t, exists)
+	assert.True(t, c.IsAborted())
+}
+
+func TestJWTMiddleware_RequireAuth_InvalidTokenFormat(t *testing.T) {
+	// Setup
+	cfg := &config.JWT{
+		Algorithm: "HS256",
+		SecretKey: "test-secret-key",
+	}
+
+	middleware := NewJWTMiddleware(cfg)
+	handler := middleware.RequireAuth()
+
+	// Setup Gin context with invalid token
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+	c.Request.Header.Set("Authorization", "Bearer invalid.token.here")
+
+	// Execute
+	handler(c)
+
+	// Assert - should return 401
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	_, exists := c.Get(constants.ContextKeyUserID)
+	assert.False(t, exists)
+	assert.True(t, c.IsAborted())
+}
+
+func TestJWTMiddleware_RequireAuth_NilConfig(t *testing.T) {
+	// Setup - nil config
+	middleware := NewJWTMiddleware(nil)
+	handler := middleware.RequireAuth()
+
+	// Setup Gin context
+	gin.SetMode(gin.TestMode)
+	w := httptest.NewRecorder()
+	c, _ := gin.CreateTestContext(w)
+	c.Request = httptest.NewRequest(http.MethodGet, "/test", nil)
+	c.Request.Header.Set("Authorization", "Bearer some.token.here")
+
+	// Execute
+	handler(c)
+
+	// Assert - should return 401
+	assert.Equal(t, http.StatusUnauthorized, w.Code)
+	_, exists := c.Get(constants.ContextKeyUserID)
+	assert.False(t, exists)
+	assert.True(t, c.IsAborted())
+}

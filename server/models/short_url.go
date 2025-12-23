@@ -6,8 +6,9 @@ import (
 
 // ShortURL represents a shortened URL entry in the database
 type ShortURL struct {
-	Domain    string    `gorm:"primaryKey;size:255" json:"domain"`
-	Slug      string    `gorm:"primaryKey;size:255" json:"slug"`
+	ID        string    `gorm:"primaryKey;size:36" json:"id"`
+	Domain    string    `gorm:"uniqueIndex:idx_domain_slug;size:255" json:"domain"`
+	Slug      string    `gorm:"uniqueIndex:idx_domain_slug;size:255" json:"slug"`
 	URL       string    `gorm:"not null;size:2048" json:"url"`
 	UserID    string    `gorm:"size:255" json:"user_id"`
 	CreatedAt time.Time `json:"created_at"`
