@@ -11,6 +11,7 @@ type User struct {
 	Username      *string   `gorm:"size:255;uniqueIndex" json:"username,omitempty"`
 	HashedPassword *string  `gorm:"size:255" json:"-"` // Never serialize password hash
 	Active        bool      `gorm:"default:true" json:"active"`
+	Plan          string    `gorm:"default:'hobbyist'" json:"plan"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
 }

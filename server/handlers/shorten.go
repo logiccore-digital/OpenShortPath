@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -12,6 +13,7 @@ import (
 	"openshortpath/server/config"
 	"openshortpath/server/constants"
 	"openshortpath/server/models"
+	"openshortpath/server/services"
 )
 
 type ShortenHandler struct {
@@ -117,6 +119,68 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 		if userIDStr, ok := userIDValue.(string); ok {
 			userID = userIDStr
 		}
+	}
+
+	// Check monthly link limit before creating the link
+	clientIP := services.GetClientIP(c)
+	var monthlyLimitInfo *services.MonthlyLinkLimitInfo
+	var err error
+	var limitType string
+	var identifier string
+	var limitPerMonth int
+
+	if userID != "" {
+		// Authenticated user - check user-level monthly limit
+		plan, planErr := services.GetUserPlan(h.db, userID)
+		if planErr != nil {
+			// If we can't get the plan, default to hobbyist limit
+			plan = constants.PlanHobbyist
+		}
+
+		limitPerMonth = services.GetMonthlyLinkLimitForPlan(plan)
+		limitType = constants.RateLimitTypeUser
+		identifier = userID
+
+		// Check monthly link limit
+		monthlyLimitInfo, err = services.CheckMonthlyLinkLimit(h.db, identifier, limitType, limitPerMonth)
+	} else {
+		// Anonymous user - check IP-level monthly limit
+		limitPerMonth = 1000 // Anonymous users: 1,000 links per month per IP
+		limitType = constants.RateLimitTypeIP
+		identifier = clientIP
+
+		// Check monthly link limit
+		monthlyLimitInfo, err = services.CheckMonthlyLinkLimit(h.db, identifier, limitType, limitPerMonth)
+	}
+
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error":   "Monthly link limit check failed",
+			"details": err.Error(),
+		})
+		return
+	}
+
+	// Set monthly link limit headers
+	if monthlyLimitInfo.Limit > 0 {
+		c.Header("X-Monthly-Link-Limit", strconv.Itoa(monthlyLimitInfo.Limit))
+		if monthlyLimitInfo.Remaining >= 0 {
+			c.Header("X-Monthly-Link-Remaining", strconv.Itoa(monthlyLimitInfo.Remaining))
+		}
+		if !monthlyLimitInfo.Reset.IsZero() {
+			c.Header("X-Monthly-Link-Reset", strconv.FormatInt(monthlyLimitInfo.Reset.Unix(), 10))
+		}
+	}
+
+	if monthlyLimitInfo.Exceeded {
+		resetTimeStr := "the start of next month"
+		if !monthlyLimitInfo.Reset.IsZero() {
+			resetTimeStr = monthlyLimitInfo.Reset.Format("2006-01-02 15:04:05 UTC")
+		}
+		c.JSON(http.StatusTooManyRequests, gin.H{
+			"error": fmt.Sprintf("Monthly link limit exceeded. Limit: %d links per month. Reset time: %s", monthlyLimitInfo.Limit, resetTimeStr),
+		})
+		return
 	}
 
 	// Validate namespace ownership if namespace_id is provided

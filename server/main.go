@@ -55,7 +55,7 @@ func main() {
 	}
 
 	// Auto-migrate database models
-	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}, &models.APIKey{}, &models.Namespace{}); err != nil {
+	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}, &models.APIKey{}, &models.Namespace{}, &models.RateLimit{}, &models.MonthlyLinkLimit{}); err != nil {
 		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 
@@ -79,6 +79,12 @@ func main() {
 		log.Printf("API key authentication enabled")
 	}
 
+	// Create API v1 route group with rate limiting middleware
+	// Rate limiting middleware runs after OptionalAuth so user context is available
+	apiV1 := r.Group("/api/v1")
+	apiV1.Use(middleware.RateLimitMiddleware(db))
+	log.Printf("Rate limiting enabled for /api/v1/* endpoints")
+
 	// Initialize handlers with database
 	helloHandler := handlers.NewHelloHandler(db)
 	shortenHandler := handlers.NewShortenHandler(db, cfg)
@@ -98,21 +104,18 @@ func main() {
 	// Use catch-all route to handle both /:slug and /:namespace/:slug patterns
 	// This must come after dashboard routes to avoid conflicts
 	r.NoRoute(redirectHandler.Redirect)
-	
-	// Shorten endpoint - requires authentication and scope check
-	if cfg.JWT != nil {
-		r.POST("/api/v1/shorten", jwtMiddleware.RequireAuth(), middleware.RequireScope("shorten_url"), shortenHandler.Shorten)
-	} else {
-		r.POST("/api/v1/shorten", shortenHandler.Shorten)
-	}
-	
-	r.GET("/api/v1/auth-provider", authProviderHandler.GetAuthProvider)
-	r.GET("/api/v1/domains", domainsHandler.GetDomains)
+
+	// Shorten endpoint - authentication is optional (handled by OptionalAuth middleware)
+	// Rate limiting is applied per IP for anonymous users, per user for authenticated users
+	apiV1.POST("/shorten", shortenHandler.Shorten)
+
+	apiV1.GET("/auth-provider", authProviderHandler.GetAuthProvider)
+	apiV1.GET("/domains", domainsHandler.GetDomains)
 
 	// Register login endpoint only if auth_provider is "local"
 	if cfg.AuthProvider == "local" {
 		loginHandler := handlers.NewLoginHandler(db, cfg.JWT)
-		r.POST("/api/v1/login", loginHandler.Login)
+		apiV1.POST("/login", loginHandler.Login)
 		log.Printf("Login endpoint enabled at /api/v1/login")
 	}
 
@@ -122,7 +125,8 @@ func main() {
 		adminUsersHandler := handlers.NewAdminUsersHandler(db)
 
 		// Create admin route group with authentication middleware
-		adminRoutes := r.Group("/api/v1/__admin")
+		// Note: Admin routes are under /api/v1 so they inherit rate limiting
+		adminRoutes := apiV1.Group("/__admin")
 		adminRoutes.Use(adminMiddleware.RequireAdmin())
 
 		// Register admin user management routes
@@ -139,7 +143,7 @@ func main() {
 		shortURLsHandler := handlers.NewShortURLsHandler(db, cfg)
 
 		// Create route group with required authentication middleware
-		shortURLsRoutes := r.Group("/api/v1/short-urls")
+		shortURLsRoutes := apiV1.Group("/short-urls")
 		shortURLsRoutes.Use(jwtMiddleware.RequireAuth())
 
 		// Register short URL management routes with scope checks
@@ -152,7 +156,7 @@ func main() {
 
 		// Register namespace management endpoints with JWT authentication
 		namespacesHandler := handlers.NewNamespacesHandler(db, cfg)
-		namespacesRoutes := r.Group("/api/v1/namespaces")
+		namespacesRoutes := apiV1.Group("/namespaces")
 		namespacesRoutes.Use(jwtMiddleware.RequireAuth())
 
 		// Register namespace management routes with scope checks
@@ -166,15 +170,13 @@ func main() {
 
 		// Register user endpoints with required authentication middleware
 		meHandler := handlers.NewMeHandler(db)
-		meRoutes := r.Group("/api/v1")
-		meRoutes.Use(jwtMiddleware.RequireAuth())
-		meRoutes.GET("/me", meHandler.GetMe)
+		apiV1.GET("/me", jwtMiddleware.RequireAuth(), meHandler.GetMe)
 
 		log.Printf("User endpoints enabled at /api/v1/me")
 
 		// Register API key management endpoints with JWT authentication
 		apiKeysHandler := handlers.NewAPIKeysHandler(db)
-		apiKeysRoutes := r.Group("/api/v1/api-keys")
+		apiKeysRoutes := apiV1.Group("/api-keys")
 		apiKeysRoutes.Use(jwtMiddleware.RequireAuth())
 		apiKeysRoutes.POST("", apiKeysHandler.CreateAPIKey)
 		apiKeysRoutes.GET("", apiKeysHandler.ListAPIKeys)
