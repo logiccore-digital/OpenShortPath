@@ -55,7 +55,7 @@ func main() {
 	}
 
 	// Auto-migrate database models
-	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}, &models.APIKey{}); err != nil {
+	if err := db.AutoMigrate(&models.ShortURL{}, &models.User{}, &models.APIKey{}, &models.Namespace{}); err != nil {
 		log.Fatalf("Failed to auto-migrate database: %v", err)
 	}
 
@@ -94,7 +94,10 @@ func main() {
 
 	// Routes
 	r.GET("/", helloHandler.HelloWorld)
-	r.GET("/:slug", redirectHandler.Redirect)
+	// Note: Dashboard routes are registered above, so they take precedence
+	// Use catch-all route to handle both /:slug and /:namespace/:slug patterns
+	// This must come after dashboard routes to avoid conflicts
+	r.NoRoute(redirectHandler.Redirect)
 	
 	// Shorten endpoint - requires authentication and scope check
 	if cfg.JWT != nil {
@@ -146,6 +149,20 @@ func main() {
 		shortURLsRoutes.DELETE("/:id", middleware.RequireScope("write_urls"), shortURLsHandler.Delete)
 
 		log.Printf("Short URL management endpoints enabled at /api/v1/short-urls/*")
+
+		// Register namespace management endpoints with JWT authentication
+		namespacesHandler := handlers.NewNamespacesHandler(db, cfg)
+		namespacesRoutes := r.Group("/api/v1/namespaces")
+		namespacesRoutes.Use(jwtMiddleware.RequireAuth())
+
+		// Register namespace management routes with scope checks
+		namespacesRoutes.POST("", middleware.RequireScope("write_urls"), namespacesHandler.CreateNamespace)
+		namespacesRoutes.GET("", middleware.RequireScope("read_urls"), namespacesHandler.ListNamespaces)
+		namespacesRoutes.GET("/:id", middleware.RequireScope("read_urls"), namespacesHandler.GetNamespace)
+		namespacesRoutes.PUT("/:id", middleware.RequireScope("write_urls"), namespacesHandler.UpdateNamespace)
+		namespacesRoutes.DELETE("/:id", middleware.RequireScope("write_urls"), namespacesHandler.DeleteNamespace)
+
+		log.Printf("Namespace management endpoints enabled at /api/v1/namespaces/*")
 
 		// Register user endpoints with required authentication middleware
 		meHandler := handlers.NewMeHandler(db)

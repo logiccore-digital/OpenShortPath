@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useNavigate, useLocation, Link } from "react-router-dom"
-import { Terminal, LayoutDashboard, User, LogOut } from "lucide-react"
+import { Terminal, LayoutDashboard, User, LogOut, Folder } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -55,6 +55,15 @@ export function Navbar() {
               >
                 <LayoutDashboard className="h-3.5 w-3.5" />
                 <span className="hidden sm:inline">Dashboard</span>
+              </Link>
+              <Link
+                to="/namespaces"
+                className={`flex items-center gap-1.5 text-xs uppercase tracking-wider transition-colors ${
+                  isActive("/namespaces") ? "text-foreground" : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Folder className="h-3.5 w-3.5" />
+                <span className="hidden sm:inline">Namespaces</span>
               </Link>
               <Link
                 to="/account"

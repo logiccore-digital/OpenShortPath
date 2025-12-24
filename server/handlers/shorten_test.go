@@ -38,7 +38,7 @@ func TestShortenHandler_Shorten_Success(t *testing.T) {
 	// Second query: insert new record
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "", nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -84,7 +84,7 @@ func TestShortenHandler_Shorten_WithJWTToken(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "user123", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "user123", nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -129,7 +129,7 @@ func TestShortenHandler_Shorten_WithCustomSlug(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs(sqlmock.AnyArg(), "example.com", "custom-slug", "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", "custom-slug", "https://example.com/target", "", nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -317,7 +317,7 @@ func TestShortenHandler_Shorten_DatabaseErrorOnInsert(t *testing.T) {
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "", sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "", nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnError(sql.ErrConnDone)
 	mock.ExpectRollback()
 

@@ -1,18 +1,19 @@
 import { useState, useEffect } from "react"
 import { useParams, useNavigate } from "react-router-dom"
-import { ArrowLeft, Edit, Trash2, Save, X } from "lucide-react"
+import { ArrowLeft, Edit, Trash2, Save, X, Folder } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/Navbar"
-import { getShortURL, updateShortURL, deleteShortURL, getDomains } from "@/services/api"
-import { ShortURL } from "@/types/api"
+import { getShortURL, updateShortURL, deleteShortURL, getDomains, listNamespaces } from "@/services/api"
+import { ShortURL, Namespace } from "@/types/api"
 
 export function ShortURLDetail() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [shortURL, setShortURL] = useState<ShortURL | null>(null)
   const [domains, setDomains] = useState<string[]>([])
+  const [namespaces, setNamespaces] = useState<Namespace[]>([])
   const [loading, setLoading] = useState<boolean>(true)
   const [error, setError] = useState<string>("")
   const [isEditing, setIsEditing] = useState<boolean>(false)
@@ -24,6 +25,7 @@ export function ShortURLDetail() {
   const [editedUrl, setEditedUrl] = useState<string>("")
   const [editedDomain, setEditedDomain] = useState<string>("")
   const [editedSlug, setEditedSlug] = useState<string>("")
+  const [editedNamespaceId, setEditedNamespaceId] = useState<string>("")
 
   // Load short URL data
   useEffect(() => {
@@ -37,15 +39,18 @@ export function ShortURLDetail() {
       setLoading(true)
       setError("")
       try {
-        const [urlData, domainList] = await Promise.all([
+        const [urlData, domainList, namespacesResponse] = await Promise.all([
           getShortURL(id),
           getDomains(),
+          listNamespaces(1, 100), // Assume user has max 1 page of namespaces
         ])
         setShortURL(urlData)
         setDomains(domainList)
+        setNamespaces(namespacesResponse.namespaces)
         setEditedUrl(urlData.url)
         setEditedDomain(urlData.domain)
         setEditedSlug(urlData.slug)
+        setEditedNamespaceId(urlData.namespace_id || "")
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load short URL")
       } finally {
@@ -65,6 +70,7 @@ export function ShortURLDetail() {
       setEditedUrl(shortURL.url)
       setEditedDomain(shortURL.domain)
       setEditedSlug(shortURL.slug)
+      setEditedNamespaceId(shortURL.namespace_id || "")
     }
   }
 
@@ -74,7 +80,7 @@ export function ShortURLDetail() {
     setSubmitting(true)
 
     try {
-      const updates: { url?: string; domain?: string; slug?: string } = {}
+      const updates: { url?: string; domain?: string; slug?: string; namespace_id?: string } = {}
       
       if (editedUrl !== shortURL.url) {
         updates.url = editedUrl
@@ -84,6 +90,10 @@ export function ShortURLDetail() {
       }
       if (editedSlug !== shortURL.slug) {
         updates.slug = editedSlug
+      }
+      const currentNamespaceId = shortURL.namespace_id || ""
+      if (editedNamespaceId !== currentNamespaceId) {
+        updates.namespace_id = editedNamespaceId || undefined
       }
 
       if (Object.keys(updates).length === 0) {
@@ -323,15 +333,48 @@ export function ShortURLDetail() {
                   </div>
 
                   <div>
+                    <label className="block text-sm font-medium mb-1.5">Namespace</label>
+                    {isEditing ? (
+                      <select
+                        value={editedNamespaceId}
+                        onChange={(e) => setEditedNamespaceId(e.target.value)}
+                        className="w-full px-3 py-2 border border-border bg-background rounded-md focus:outline-none focus:ring-2 focus:ring-ring text-sm"
+                      >
+                        <option value="">No namespace</option>
+                        {namespaces
+                          .filter((ns) => ns.domain === editedDomain)
+                          .map((namespace) => (
+                            <option key={namespace.id} value={namespace.id}>
+                              {namespace.name}
+                            </option>
+                          ))}
+                      </select>
+                    ) : (
+                      <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                        {shortURL.namespace_id ? (
+                          <div className="flex items-center gap-2">
+                            <Folder className="h-4 w-4 text-emerald-500" />
+                            <span className="font-mono">
+                              {namespaces.find((ns) => ns.id === shortURL.namespace_id)?.name || "Unknown"}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-muted-foreground">—</span>
+                        )}
+                      </div>
+                    )}
+                  </div>
+
+                  <div>
                     <label className="block text-sm font-medium mb-1.5">Short URL</label>
                     <div className="px-3 py-2 bg-muted rounded-md text-sm">
                       <a
-                        href={`http://${shortURL.domain}/${shortURL.slug}`}
+                        href={`http://${shortURL.domain}${shortURL.namespace_id ? `/${namespaces.find((ns) => ns.id === shortURL.namespace_id)?.name || ""}` : ""}/${shortURL.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-primary hover:underline font-mono"
                       >
-                        {shortURL.domain}/{shortURL.slug}
+                        {shortURL.domain}{shortURL.namespace_id ? `/${namespaces.find((ns) => ns.id === shortURL.namespace_id)?.name || ""}` : ""}/{shortURL.slug}
                       </a>
                     </div>
                   </div>

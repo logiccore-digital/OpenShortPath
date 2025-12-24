@@ -1,18 +1,20 @@
 import { useState, useEffect } from "react"
 import { Link } from "react-router-dom"
-import { Scissors, Eye, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
+import { Scissors, Eye, ChevronLeft, ChevronRight, ChevronDown, Folder } from "lucide-react"
 import { toast } from "sonner"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Navbar } from "@/components/Navbar"
-import { getDomains, shorten, listShortURLs } from "@/services/api"
-import { ShortURL } from "@/types/api"
+import { getDomains, shorten, listShortURLs, listNamespaces } from "@/services/api"
+import { ShortURL, Namespace } from "@/types/api"
 
 export function Dashboard() {
   const [domains, setDomains] = useState<string[]>([])
   const [selectedDomain, setSelectedDomain] = useState<string>("")
   const [url, setUrl] = useState<string>("")
   const [slug, setSlug] = useState<string>("")
+  const [selectedNamespaceId, setSelectedNamespaceId] = useState<string>("")
+  const [namespaces, setNamespaces] = useState<Namespace[]>([])
   const [shortURLs, setShortURLs] = useState<ShortURL[]>([])
   const [currentPage, setCurrentPage] = useState<number>(1)
   const [totalPages, setTotalPages] = useState<number>(1)
@@ -22,20 +24,24 @@ export function Dashboard() {
 
   const limit = 20
 
-  // Load domains on mount
+  // Load domains and namespaces on mount
   useEffect(() => {
-    const loadDomains = async () => {
+    const loadData = async () => {
       try {
-        const domainList = await getDomains()
+        const [domainList, namespacesResponse] = await Promise.all([
+          getDomains(),
+          listNamespaces(1, 100), // Assume user has max 1 page of namespaces
+        ])
         setDomains(domainList)
+        setNamespaces(namespacesResponse.namespaces)
         if (domainList.length > 0) {
           setSelectedDomain(domainList[0])
         }
       } catch (err) {
-        toast.error(err instanceof Error ? err.message : "Failed to load domains")
+        toast.error(err instanceof Error ? err.message : "Failed to load data")
       }
     }
-    loadDomains()
+    loadData()
   }, [])
 
   // Load short URLs on mount and when page changes
@@ -61,11 +67,17 @@ export function Dashboard() {
     setSubmitting(true)
 
     try {
-      await shorten(selectedDomain, url, slug || undefined)
+      await shorten(
+        selectedDomain,
+        url,
+        slug || undefined,
+        selectedNamespaceId || undefined
+      )
       toast.success("Short URL created successfully!")
       // Reset form
       setUrl("")
       setSlug("")
+      setSelectedNamespaceId("")
       // Refresh the list
       const response = await listShortURLs(currentPage, limit)
       setShortURLs(response.urls)
@@ -99,7 +111,7 @@ export function Dashboard() {
             <CardHeader>
               <CardTitle>Create Short URL</CardTitle>
               <CardDescription>
-                Create a new shortened URL by selecting a domain and providing the target URL.
+                Create a new shortened URL by selecting a domain and providing the target URL. Optionally assign it to a namespace.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -111,7 +123,10 @@ export function Dashboard() {
                     <select
                       id="domain"
                       value={selectedDomain}
-                      onChange={(e) => setSelectedDomain(e.target.value)}
+                      onChange={(e) => {
+                        setSelectedDomain(e.target.value)
+                        setSelectedNamespaceId("") // Reset namespace when domain changes
+                      }}
                       required
                       className="w-full h-full appearance-none bg-transparent text-foreground pl-4 pr-10 focus:outline-none cursor-pointer text-sm"
                       disabled={submitting || domains.length === 0}
@@ -122,6 +137,31 @@ export function Dashboard() {
                           {domain}
                         </option>
                       ))}
+                    </select>
+                    <ChevronDown
+                      size={14}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground pointer-events-none"
+                    />
+                  </div>
+                  
+                  {/* Namespace select */}
+                  <div className="relative flex items-center min-w-[140px] bg-input border-y sm:border-y border-x sm:border-l border-t-0 sm:border-t border-border h-[57px]">
+                    <select
+                      id="namespace"
+                      value={selectedNamespaceId}
+                      onChange={(e) => setSelectedNamespaceId(e.target.value)}
+                      className="w-full h-full appearance-none bg-transparent text-foreground pl-4 pr-10 focus:outline-none cursor-pointer text-sm"
+                      disabled={submitting}
+                      style={{ colorScheme: 'dark' }}
+                    >
+                      <option value="">No namespace</option>
+                      {namespaces
+                        .filter((ns) => ns.domain === selectedDomain)
+                        .map((namespace) => (
+                          <option key={namespace.id} value={namespace.id}>
+                            {namespace.name}
+                          </option>
+                        ))}
                     </select>
                     <ChevronDown
                       size={14}
@@ -201,6 +241,7 @@ export function Dashboard() {
                           <th className="text-left p-3 font-bold text-sm">Short URL</th>
                           <th className="text-left p-3 font-bold text-sm">Original URL</th>
                           <th className="text-left p-3 font-bold text-sm">Domain</th>
+                          <th className="text-left p-3 font-bold text-sm">Namespace</th>
                           <th className="text-left p-3 font-bold text-sm">Slug</th>
                           <th className="text-left p-3 font-bold text-sm">Created</th>
                           <th className="text-left p-3 font-bold text-sm">Actions</th>
@@ -211,12 +252,12 @@ export function Dashboard() {
                           <tr key={shortURL.id} className="border-b border-border hover:bg-muted/30 transition-colors">
                             <td className="p-3">
                               <a
-                                href={`http://${shortURL.domain}/${shortURL.slug}`}
+                                href={`http://${shortURL.domain}${shortURL.namespace_id ? `/${namespaces.find((ns) => ns.id === shortURL.namespace_id)?.name || ""}` : ""}/${shortURL.slug}`}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="text-emerald-500 hover:text-emerald-400 hover:underline text-sm"
                               >
-                                {shortURL.domain}/{shortURL.slug}
+                                {shortURL.domain}{shortURL.namespace_id ? `/${namespaces.find((ns) => ns.id === shortURL.namespace_id)?.name || ""}` : ""}/{shortURL.slug}
                               </a>
                             </td>
                             <td className="p-3">
@@ -231,6 +272,18 @@ export function Dashboard() {
                               </a>
                             </td>
                             <td className="p-3 text-muted-foreground text-sm">{shortURL.domain}</td>
+                            <td className="p-3 text-muted-foreground text-sm">
+                              {shortURL.namespace_id ? (
+                                <div className="flex items-center gap-1.5">
+                                  <Folder className="h-3.5 w-3.5 text-emerald-500" />
+                                  <span className="font-mono text-xs">
+                                    {namespaces.find((ns) => ns.id === shortURL.namespace_id)?.name || "Unknown"}
+                                  </span>
+                                </div>
+                              ) : (
+                                <span className="text-muted-foreground/50">—</span>
+                              )}
+                            </td>
                             <td className="p-3 text-muted-foreground font-mono text-sm">{shortURL.slug}</td>
                             <td className="p-3 text-muted-foreground text-sm">{formatDate(shortURL.created_at)}</td>
                             <td className="p-3">
