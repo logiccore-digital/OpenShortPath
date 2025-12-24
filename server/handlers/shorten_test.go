@@ -35,6 +35,17 @@ func TestShortenHandler_Shorten_Success(t *testing.T) {
 		WithArgs("example.com", sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
 
+	// Mock monthly link limit check for anonymous user (IP-based)
+	// GetClientIP will return RemoteAddr, which we need to mock
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), "ip", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "ip", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
 	// Second query: insert new record
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
@@ -76,15 +87,34 @@ func TestShortenHandler_Shorten_WithJWTToken(t *testing.T) {
 	}
 
 	handler := NewShortenHandler(db, cfg)
+	userID := "user123"
+	now := time.Now()
 
 	// Mock database queries
 	mock.ExpectQuery(`SELECT (.+) FROM "short_urls"`).
 		WithArgs("example.com", sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
 
+	// Mock user query to get plan (for monthly limit check)
+	userRows := sqlmock.NewRows([]string{"user_id", "username", "hashed_password", "active", "plan", "created_at", "updated_at"}).
+		AddRow(userID, "testuser", nil, true, "hobbyist", now, now)
+	mock.ExpectQuery(`SELECT (.+) FROM "users"`).
+		WithArgs(userID).
+		WillReturnRows(userRows)
+
+	// Mock monthly link limit check transaction
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(userID, "user", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), userID, "user", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
-		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", "user123", nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WithArgs(sqlmock.AnyArg(), "example.com", sqlmock.AnyArg(), "https://example.com/target", userID, nil, sqlmock.AnyArg(), sqlmock.AnyArg()).
 		WillReturnResult(sqlmock.NewResult(1, 1))
 	mock.ExpectCommit()
 
@@ -92,7 +122,7 @@ func TestShortenHandler_Shorten_WithJWTToken(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
-	c.Set(constants.ContextKeyUserID, "user123")
+	c.Set(constants.ContextKeyUserID, userID)
 
 	reqBody := `{"domain": "example.com", "url": "https://example.com/target"}`
 	c.Request = httptest.NewRequest(http.MethodPost, "/api/v1/shorten", strings.NewReader(reqBody))
@@ -126,6 +156,16 @@ func TestShortenHandler_Shorten_WithCustomSlug(t *testing.T) {
 	mock.ExpectQuery(`SELECT (.+) FROM "short_urls"`).
 		WithArgs("example.com", "custom-slug").
 		WillReturnError(gorm.ErrRecordNotFound)
+
+	// Mock monthly link limit check for anonymous user (IP-based)
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), "ip", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "ip", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).
@@ -314,6 +354,16 @@ func TestShortenHandler_Shorten_DatabaseErrorOnInsert(t *testing.T) {
 	mock.ExpectQuery(`SELECT (.+) FROM "short_urls"`).
 		WithArgs("example.com", sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
+
+	// Mock monthly link limit check for anonymous user (IP-based)
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), "ip", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "ip", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
 	mock.ExpectBegin()
 	mock.ExpectExec(`INSERT INTO "short_urls"`).

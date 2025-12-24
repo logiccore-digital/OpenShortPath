@@ -78,8 +78,9 @@ func (m *JWTMiddleware) OptionalAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Store user ID in context
+		// Store user ID and authentication method in context
 		c.Set(constants.ContextKeyUserID, userID)
+		c.Set(constants.ContextKeyAuthMethod, constants.AuthMethodJWT)
 		c.Next()
 	}
 }
@@ -204,8 +205,9 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Store user ID in context
+		// Store user ID and authentication method in context
 		c.Set(constants.ContextKeyUserID, userID)
+		c.Set(constants.ContextKeyAuthMethod, constants.AuthMethodJWT)
 		c.Next()
 	}
 }
@@ -221,9 +223,10 @@ func (m *JWTMiddleware) requireAPIKeyAuth(c *gin.Context, key string) {
 		return
 	}
 
-	// Store user ID and scopes in context
+	// Store user ID, scopes, and authentication method in context
 	c.Set(constants.ContextKeyUserID, userID)
 	c.Set(constants.ContextKeyScopes, scopes)
+	c.Set(constants.ContextKeyAuthMethod, constants.AuthMethodAPIKey)
 	c.Next()
 }
 

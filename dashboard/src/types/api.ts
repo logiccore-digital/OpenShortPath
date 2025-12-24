@@ -59,6 +59,13 @@ export interface UserResponse {
   user_id: string
   username?: string
   active: boolean
+  plan?: string
+  monthly_link_limit?: number
+  monthly_links_used?: number
+  monthly_link_reset?: string
+  rate_limit_per_hour?: number
+  rate_limit_remaining?: number
+  rate_limit_reset?: string
   created_at: string
   updated_at: string
 }

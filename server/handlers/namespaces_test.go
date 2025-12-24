@@ -608,6 +608,27 @@ func TestShortenHandler_WithNamespace_Success(t *testing.T) {
 		WithArgs("example.com", sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
 
+	// Mock user query to get plan (for monthly limit check)
+	userRows := sqlmock.NewRows([]string{"user_id", "username", "hashed_password", "active", "plan", "created_at", "updated_at"}).
+		AddRow(userID, "testuser", nil, true, "hobbyist", now, now)
+	mock.ExpectQuery(`SELECT (.+) FROM "users"`).
+		WithArgs(userID).
+		WillReturnRows(userRows)
+
+	// Mock monthly link limit check transaction
+	// First, the transaction begins
+	mock.ExpectBegin()
+	// Then query for existing monthly limit record (should return no rows)
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(userID, "user", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	// Then insert new monthly link limit record
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), userID, "user", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	// Transaction commits
+	mock.ExpectCommit()
+
 	// Mock namespace ownership check
 	namespaceRows := sqlmock.NewRows([]string{"id", "name", "domain", "user_id", "created_at", "updated_at"}).
 		AddRow(namespaceID, "my-namespace", "example.com", userID, now, now)
@@ -660,6 +681,17 @@ func TestShortenHandler_WithNamespace_Unauthorized(t *testing.T) {
 		WithArgs("example.com", sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
 
+	// Mock monthly link limit check for anonymous user (IP-based)
+	// This happens before namespace check, but since user is anonymous, it will check IP limit
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), "ip", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), sqlmock.AnyArg(), "ip", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
+
 	gin.SetMode(gin.TestMode)
 	w := httptest.NewRecorder()
 	c, _ := gin.CreateTestContext(w)
@@ -690,11 +722,29 @@ func TestShortenHandler_WithNamespace_NotFound(t *testing.T) {
 	handler := NewShortenHandler(db, cfg)
 	userID := uuid.New().String()
 	namespaceID := uuid.New().String()
+	now := time.Now()
 
 	// Mock check for existing short URL (should return no rows) - this happens first
 	mock.ExpectQuery(`SELECT (.+) FROM "short_urls"`).
 		WithArgs("example.com", sqlmock.AnyArg()).
 		WillReturnError(gorm.ErrRecordNotFound)
+
+	// Mock user query to get plan (for monthly limit check)
+	userRows := sqlmock.NewRows([]string{"user_id", "username", "hashed_password", "active", "plan", "created_at", "updated_at"}).
+		AddRow(userID, "testuser", nil, true, "hobbyist", now, now)
+	mock.ExpectQuery(`SELECT (.+) FROM "users"`).
+		WithArgs(userID).
+		WillReturnRows(userRows)
+
+	// Mock monthly link limit check transaction
+	mock.ExpectBegin()
+	mock.ExpectQuery(`SELECT (.+) FROM "monthly_link_limits"`).
+		WithArgs(userID, "user", sqlmock.AnyArg()).
+		WillReturnError(gorm.ErrRecordNotFound)
+	mock.ExpectExec(`INSERT INTO "monthly_link_limits"`).
+		WithArgs(sqlmock.AnyArg(), userID, "user", 1, sqlmock.AnyArg(), sqlmock.AnyArg(), sqlmock.AnyArg()).
+		WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectCommit()
 
 	// Mock namespace ownership check - not found
 	mock.ExpectQuery(`SELECT (.+) FROM "namespaces"`).

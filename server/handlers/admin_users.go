@@ -38,11 +38,18 @@ type UpdateUserRequest struct {
 
 // UserResponse represents a user in API responses (without password hash)
 type UserResponse struct {
-	UserID    string `json:"user_id"`
-	Username  string `json:"username,omitempty"`
-	Active    bool   `json:"active"`
-	CreatedAt string `json:"created_at"`
-	UpdatedAt string `json:"updated_at"`
+	UserID            string `json:"user_id"`
+	Username          string `json:"username,omitempty"`
+	Active            bool   `json:"active"`
+	Plan              string `json:"plan,omitempty"`
+	MonthlyLinkLimit  int    `json:"monthly_link_limit,omitempty"`
+	MonthlyLinksUsed  int    `json:"monthly_links_used,omitempty"`
+	MonthlyLinkReset  string `json:"monthly_link_reset,omitempty"`
+	RateLimitPerHour  int    `json:"rate_limit_per_hour,omitempty"`
+	RateLimitRemaining int   `json:"rate_limit_remaining,omitempty"`
+	RateLimitReset     string `json:"rate_limit_reset,omitempty"`
+	CreatedAt         string `json:"created_at"`
+	UpdatedAt         string `json:"updated_at"`
 }
 
 // ListUsersResponse represents the paginated list response

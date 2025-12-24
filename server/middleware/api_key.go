@@ -60,9 +60,10 @@ func (m *APIKeyMiddleware) OptionalAuth() gin.HandlerFunc {
 			return
 		}
 
-		// Store user ID and scopes in context
+		// Store user ID, scopes, and authentication method in context
 		c.Set(constants.ContextKeyUserID, userID)
 		c.Set(constants.ContextKeyScopes, scopes)
+		c.Set(constants.ContextKeyAuthMethod, constants.AuthMethodAPIKey)
 		c.Next()
 	}
 }

@@ -215,6 +215,141 @@ export function Account() {
                       </div>
                     </div>
 
+                    {user.plan && (
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5">Plan</label>
+                        <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                          <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200 capitalize">
+                            {user.plan}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+
+                    {user.monthly_link_limit !== undefined && (
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5">
+                          Monthly Link Limit
+                        </label>
+                        <div className="space-y-2">
+                          <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                            <div className="flex items-center justify-between mb-1">
+                              <span>
+                                {user.monthly_links_used ?? 0} / {user.monthly_link_limit} links used
+                              </span>
+                              <span className="text-muted-foreground">
+                                {user.monthly_link_limit > 0
+                                  ? Math.round(
+                                      ((user.monthly_links_used ?? 0) / user.monthly_link_limit) *
+                                        100
+                                    )
+                                  : 0}
+                                %
+                              </span>
+                            </div>
+                            <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                              <div
+                                className={`h-2 rounded-full ${
+                                  (user.monthly_links_used ?? 0) >= user.monthly_link_limit
+                                    ? "bg-red-500"
+                                    : (user.monthly_links_used ?? 0) >=
+                                      user.monthly_link_limit * 0.8
+                                    ? "bg-yellow-500"
+                                    : "bg-green-500"
+                                }`}
+                                style={{
+                                  width: `${
+                                    user.monthly_link_limit > 0
+                                      ? Math.min(
+                                          ((user.monthly_links_used ?? 0) /
+                                            user.monthly_link_limit) *
+                                            100,
+                                          100
+                                        )
+                                      : 0
+                                  }%`,
+                                }}
+                              />
+                            </div>
+                          </div>
+                          {user.monthly_link_reset && (
+                            <div className="text-xs text-muted-foreground px-3">
+                              Resets on {formatDate(user.monthly_link_reset)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {user.rate_limit_per_hour !== undefined && (
+                      <div>
+                        <label className="block text-sm font-medium mb-1.5">
+                          API Rate Limit (per hour)
+                        </label>
+                        <div className="space-y-2">
+                          <div className="px-3 py-2 bg-muted rounded-md text-sm">
+                            {user.rate_limit_per_hour === 0 ? (
+                              <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
+                                Unlimited
+                              </span>
+                            ) : (
+                              <>
+                                <div className="flex items-center justify-between mb-1">
+                                  <span>
+                                    {user.rate_limit_remaining !== undefined &&
+                                    user.rate_limit_remaining >= 0
+                                      ? user.rate_limit_remaining
+                                      : user.rate_limit_per_hour}{" "}
+                                    / {user.rate_limit_per_hour} requests remaining
+                                  </span>
+                                  {user.rate_limit_remaining !== undefined &&
+                                    user.rate_limit_remaining >= 0 && (
+                                      <span className="text-muted-foreground">
+                                        {Math.round(
+                                          (user.rate_limit_remaining / user.rate_limit_per_hour) *
+                                            100
+                                        )}
+                                        %
+                                      </span>
+                                    )}
+                                </div>
+                                {user.rate_limit_remaining !== undefined &&
+                                  user.rate_limit_remaining >= 0 && (
+                                    <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                                      <div
+                                        className={`h-2 rounded-full ${
+                                          user.rate_limit_remaining === 0
+                                            ? "bg-red-500"
+                                            : user.rate_limit_remaining <=
+                                              user.rate_limit_per_hour * 0.2
+                                            ? "bg-yellow-500"
+                                            : "bg-green-500"
+                                        }`}
+                                        style={{
+                                          width: `${
+                                            Math.max(
+                                              (user.rate_limit_remaining /
+                                                user.rate_limit_per_hour) *
+                                                100,
+                                              0
+                                            )
+                                          }%`,
+                                        }}
+                                      />
+                                    </div>
+                                  )}
+                              </>
+                            )}
+                          </div>
+                          {user.rate_limit_reset && (
+                            <div className="text-xs text-muted-foreground px-3">
+                              Resets on {formatDate(user.rate_limit_reset)}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
                     <div>
                       <label className="block text-sm font-medium mb-1.5">Created At</label>
                       <div className="px-3 py-2 bg-muted rounded-md text-sm">
