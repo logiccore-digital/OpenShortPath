@@ -1,0 +1,238 @@
+# Plans and Limits
+
+This page explains the various plans, usage limits, and access levels available for OpenShortPath.
+
+## Overview
+
+OpenShortPath offers different access levels to suit various use cases, from anonymous usage to verified accounts and paid subscriptions. Understanding these plans and their limits helps you choose the right option for your needs.
+
+## Plans
+
+### Hobbyist (Free)
+
+The Hobbyist plan is our free tier, perfect for personal projects and low-volume usage.
+
+**Pricing:** $0/month
+
+**Features:**
+- **1,000 links per month** - Create up to 1,000 short URLs each month
+- **Web Interface** - Full access to the dashboard for managing your links
+- **1 Namespace** - Organize your links within a single namespace
+- **Limited API/CLI Access** - API and CLI access with a rate limit of 5 requests per hour
+- **No Webhooks** - Webhook functionality is not available on this plan
+
+**Best for:** Personal projects, testing, and low-volume usage.
+
+### Pro
+
+The Pro plan is designed for power users and businesses that need higher limits and additional features.
+
+**Pricing:** $5/month
+
+**Features:**
+- **10,000 links per month** - Create up to 10,000 short URLs each month (10x the free tier)
+- **Full API & CLI Access** - Unlimited API and CLI requests without rate limits
+- **10 Namespaces** - Organize your links across multiple namespaces
+- **Webhooks & Events** - Receive real-time notifications when links are clicked or updated
+- **Priority Support** - Get faster response times for support requests
+
+**Best for:** Businesses, high-volume users, and applications requiring webhooks.
+
+## Anonymous Usage
+
+You can use OpenShortPath without creating an account, but with stricter limits to prevent abuse.
+
+**Rate Limits:**
+- **5 requests per hour per IP** - API requests are limited to 5 per hour from the same IP address
+- **1,000 links per month per IP** - Total link creation is limited to 1,000 per month per IP address
+
+**Restrictions:**
+- No persistent account or dashboard access
+- No link management after creation
+- Limits are enforced per IP address, which may affect users behind shared networks
+- No API key generation or authentication
+
+**Best for:** Quick, one-off link shortening without account creation.
+
+**Note:** To remove these restrictions and get better limits, consider creating a free account or upgrading to a paid plan. See the [API Reference](/docs/api-reference) for details on how to authenticate and use the API.
+
+## Verified Access
+
+Verified Access is a one-time payment option that provides lifetime API access without a recurring subscription.
+
+**Pricing:** $10 one-time payment
+
+**Features:**
+- **Lifetime API Access** - Permanent access to the API without expiration
+- **No Rate Limits** - Removes the 5 per hour rate limit restriction
+- **Standard Link Limit** - 1,000 links per month (same as Hobbyist plan)
+- **No Recurring Fees** - Pay once and use forever
+- **Full API/CLI Access** - Complete access to all API endpoints and CLI tools
+
+**Best for:** Users who want API access without monthly subscriptions but don't need the higher limits of the Pro plan.
+
+**Important:** Verified Access removes rate limits but maintains the 1,000 links/month limit. If you need more than 1,000 links per month, consider the Pro plan.
+
+## Comparison Table
+
+<div className="overflow-x-auto my-6">
+  <table className="min-w-full border-collapse">
+    <thead>
+      <tr className="border-b border-gray-200 dark:border-gray-800">
+        <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">Feature</th>
+        <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">Anonymous</th>
+        <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">Hobbyist</th>
+        <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">Verified Access</th>
+        <th className="text-left py-3 px-4 font-semibold text-gray-900 dark:text-gray-100">Pro</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Price</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">Free</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">$0/month</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">$10 one-time</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">$5/month</td>
+      </tr>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Links per month</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">1,000 per IP</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">1,000</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">1,000</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">10,000</td>
+      </tr>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">API Rate Limit</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">5/hour per IP</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">5/hour</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">Unlimited</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">Unlimited</td>
+      </tr>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Web Interface</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+      </tr>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Namespaces</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">1</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">1</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">10</td>
+      </tr>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Webhooks</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+      </tr>
+      <tr className="border-b border-gray-100 dark:border-gray-800">
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Priority Support</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+      </tr>
+      <tr>
+        <td className="py-3 px-4 font-medium text-gray-900 dark:text-gray-100">Account Required</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">❌</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+        <td className="py-3 px-4 text-gray-700 dark:text-gray-300">✅</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
+## Understanding Limits
+
+### Link Limits
+
+Link limits are calculated on a monthly basis and reset at the beginning of each calendar month. For example:
+- If you create 500 links in January, you can create 500 more before hitting the 1,000 limit
+- On February 1st, your limit resets and you can create another 1,000 links
+
+**Note:** Deleted links do not count toward your monthly limit, but they also don't free up space in your current month's allocation.
+
+### Rate Limits
+
+Rate limits control how many API requests you can make within a specific time window:
+
+- **Hobbyist Plan:** 5 requests per hour
+- **Anonymous Usage:** 5 requests per hour per IP address
+- **Verified Access & Pro:** No rate limits
+
+If you exceed your rate limit, you'll receive a `429 Too Many Requests` error. Wait until the time window resets before making additional requests.
+
+For more information about API endpoints and authentication, see the [API Reference](/docs/api-reference).
+
+### IP-Based Limits (Anonymous)
+
+Anonymous usage limits are enforced per IP address. This means:
+- Multiple users behind the same network (e.g., office, school) share the same limits
+- Using a VPN or proxy may affect which IP address is used for rate limiting
+- Limits reset based on the IP address, not per user
+
+## Upgrading Your Plan
+
+### From Anonymous to Account
+
+1. Create a free Hobbyist account to get:
+   - Persistent link management
+   - Dashboard access
+   - Better organization with namespaces
+
+### From Hobbyist to Verified Access
+
+1. Pay the one-time $10 verification fee
+2. Get unlimited API rate limits
+3. Maintain the 1,000 links/month limit
+
+### From Hobbyist/Verified to Pro
+
+1. Subscribe to the Pro plan ($5/month)
+2. Increase your link limit to 10,000/month
+3. Get access to webhooks and priority support
+4. Use up to 10 namespaces
+
+## Custom Enterprise Plans
+
+If you need limits beyond what our standard plans offer, we offer custom enterprise solutions with:
+- Higher link limits
+- Custom rate limits
+- Dedicated support
+- SLA guarantees
+- Custom integrations
+
+Contact us at [hello@openshortpath.com](mailto:hello@openshortpath.com) to discuss your requirements.
+
+## Frequently Asked Questions
+
+### What happens if I exceed my link limit?
+
+If you exceed your monthly link limit, API requests to create new links will return a `429 Too Many Requests` error. You'll need to wait until the next month or upgrade your plan.
+
+### Can I delete old links to free up space?
+
+Deleting links doesn't free up space in your current month's allocation. However, deleted links no longer count toward your total link count, and you can create new links once your monthly limit resets.
+
+### Do rate limits apply to reading links?
+
+Rate limits primarily apply to write operations (creating, updating, deleting links). Reading links (GET requests) typically have higher or no rate limits, but this may vary by plan.
+
+### Can I switch between plans?
+
+Yes! You can upgrade or downgrade your plan at any time. Changes take effect immediately:
+- Upgrading: You get immediate access to higher limits
+- Downgrading: You keep access until the end of your current billing period
+
+### What's the difference between Verified Access and Pro?
+
+- **Verified Access:** One-time $10 payment, 1,000 links/month, unlimited API rate limits
+- **Pro:** $5/month subscription, 10,000 links/month, unlimited API rate limits, plus webhooks and priority support
+
+Choose Verified Access if you want API access without recurring fees. Choose Pro if you need more links or advanced features.
+
