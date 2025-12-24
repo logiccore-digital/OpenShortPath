@@ -12,6 +12,10 @@ import {
   CreateAPIKeyRequest,
   CreateAPIKeyResponse,
   ListAPIKeysResponse,
+  Namespace,
+  CreateNamespaceRequest,
+  UpdateNamespaceRequest,
+  ListNamespacesResponse,
 } from "../types/api"
 import { getStoredToken, removeStoredToken } from "../lib/auth"
 
@@ -120,9 +124,10 @@ export async function login(username: string, password: string): Promise<LoginRe
 export async function shorten(
   domain: string,
   url: string,
-  slug?: string
+  slug?: string,
+  namespaceId?: string
 ): Promise<ShortURL> {
-  const request: ShortenRequest = { domain, url, slug }
+  const request: ShortenRequest = { domain, url, slug, namespace_id: namespaceId }
   return apiRequest<ShortURL>("/shorten", {
     method: "POST",
     body: JSON.stringify(request),
@@ -202,6 +207,63 @@ export async function listAPIKeys(): Promise<ListAPIKeysResponse> {
  */
 export async function deleteAPIKey(id: string): Promise<void> {
   return apiRequest<void>(`/api-keys/${id}`, {
+    method: "DELETE",
+  })
+}
+
+/**
+ * Create a new namespace
+ */
+export async function createNamespace(
+  name: string,
+  domain: string
+): Promise<Namespace> {
+  const request: CreateNamespaceRequest = { name, domain }
+  return apiRequest<Namespace>("/namespaces", {
+    method: "POST",
+    body: JSON.stringify(request),
+  })
+}
+
+/**
+ * List user's namespaces with pagination
+ */
+export async function listNamespaces(
+  page: number = 1,
+  limit: number = 20
+): Promise<ListNamespacesResponse> {
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString(),
+  })
+  return apiRequest<ListNamespacesResponse>(`/namespaces?${params.toString()}`)
+}
+
+/**
+ * Get a single namespace by ID
+ */
+export async function getNamespace(id: string): Promise<Namespace> {
+  return apiRequest<Namespace>(`/namespaces/${id}`)
+}
+
+/**
+ * Update a namespace by ID
+ */
+export async function updateNamespace(
+  id: string,
+  updates: UpdateNamespaceRequest
+): Promise<Namespace> {
+  return apiRequest<Namespace>(`/namespaces/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(updates),
+  })
+}
+
+/**
+ * Delete a namespace by ID
+ */
+export async function deleteNamespace(id: string): Promise<void> {
+  return apiRequest<void>(`/namespaces/${id}`, {
     method: "DELETE",
   })
 }

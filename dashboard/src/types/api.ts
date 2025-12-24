@@ -17,6 +17,7 @@ export interface ShortenRequest {
   domain: string
   url: string
   slug?: string
+  namespace_id?: string
 }
 
 export interface ShortURL {
@@ -25,6 +26,7 @@ export interface ShortURL {
   slug: string
   url: string
   user_id: string
+  namespace_id?: string
   created_at: string
   updated_at: string
 }
@@ -41,6 +43,7 @@ export interface UpdateShortURLRequest {
   url?: string
   slug?: string
   domain?: string
+  namespace_id?: string
 }
 
 export interface ApiError {
@@ -79,5 +82,32 @@ export interface APIKeyListItem {
 
 export interface ListAPIKeysResponse {
   keys: APIKeyListItem[]
+}
+
+export interface Namespace {
+  id: string
+  name: string
+  domain: string
+  user_id: string
+  created_at: string
+  updated_at: string
+}
+
+export interface CreateNamespaceRequest {
+  name: string
+  domain: string
+}
+
+export interface UpdateNamespaceRequest {
+  name?: string
+  domain?: string
+}
+
+export interface ListNamespacesResponse {
+  namespaces: Namespace[]
+  page: number
+  limit: number
+  total: number
+  total_pages: number
 }
 

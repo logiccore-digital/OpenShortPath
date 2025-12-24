@@ -19,17 +19,18 @@ type ShortURLsHandler struct {
 }
 
 type UpdateShortURLRequest struct {
-	URL    string `json:"url,omitempty"`
-	Slug   string `json:"slug,omitempty"`
-	Domain string `json:"domain,omitempty"`
+	URL         string  `json:"url,omitempty"`
+	Slug        string  `json:"slug,omitempty"`
+	Domain      string  `json:"domain,omitempty"`
+	NamespaceID *string `json:"namespace_id,omitempty"`
 }
 
 type ListResponse struct {
 	URLs       []models.ShortURL `json:"urls"`
-	Page       int                `json:"page"`
-	Limit      int                `json:"limit"`
-	Total      int64              `json:"total"`
-	TotalPages int                `json:"total_pages"`
+	Page       int               `json:"page"`
+	Limit      int               `json:"limit"`
+	Total      int64             `json:"total"`
+	TotalPages int               `json:"total_pages"`
 }
 
 func NewShortURLsHandler(db *gorm.DB, cfg *config.Config) *ShortURLsHandler {
@@ -280,6 +281,32 @@ func (h *ShortURLsHandler) Update(c *gin.Context) {
 		updateFields["slug"] = req.Slug
 	}
 
+	// Handle namespace_id update
+	if req.NamespaceID != nil {
+		// If empty string, remove namespace link (set to NULL)
+		if *req.NamespaceID == "" {
+			updateFields["namespace_id"] = nil
+		} else {
+			// Validate namespace ownership
+			var namespace models.Namespace
+			result := h.db.Where("id = ? AND user_id = ?", *req.NamespaceID, userID).First(&namespace)
+			if result.Error != nil {
+				if result.Error == gorm.ErrRecordNotFound {
+					c.JSON(http.StatusForbidden, gin.H{
+						"error": "Namespace not found or you do not have permission to use it",
+					})
+					return
+				}
+				c.JSON(http.StatusInternalServerError, gin.H{
+					"error":   "Database error",
+					"details": result.Error.Error(),
+				})
+				return
+			}
+			updateFields["namespace_id"] = *req.NamespaceID
+		}
+	}
+
 	// If no fields to update, return the existing record
 	if len(updateFields) == 0 {
 		c.JSON(http.StatusOK, shortURL)
@@ -363,4 +390,3 @@ func (h *ShortURLsHandler) Delete(c *gin.Context) {
 
 	c.AbortWithStatus(http.StatusNoContent)
 }
-

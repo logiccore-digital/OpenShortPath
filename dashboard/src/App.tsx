@@ -4,6 +4,7 @@ import { Dashboard } from "./pages/Dashboard"
 import { Login } from "./pages/Login"
 import { ShortURLDetail } from "./pages/ShortURLDetail"
 import { Account } from "./pages/Account"
+import { Namespaces } from "./pages/Namespaces"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 import { ThemeProvider } from "./components/theme/ThemeProvider"
 
@@ -35,6 +36,14 @@ function App() {
           element={
             <ProtectedRoute>
               <Account />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/namespaces"
+          element={
+            <ProtectedRoute>
+              <Namespaces />
             </ProtectedRoute>
           }
         />

@@ -20,9 +20,10 @@ type ShortenHandler struct {
 }
 
 type ShortenRequest struct {
-	Domain string `json:"domain" binding:"required"`
-	URL    string `json:"url" binding:"required"`
-	Slug   string `json:"slug,omitempty"`
+	Domain      string  `json:"domain" binding:"required"`
+	URL         string  `json:"url" binding:"required"`
+	Slug        string  `json:"slug,omitempty"`
+	NamespaceID *string `json:"namespace_id,omitempty"`
 }
 
 func NewShortenHandler(db *gorm.DB, cfg *config.Config) *ShortenHandler {
@@ -118,16 +119,43 @@ func (h *ShortenHandler) Shorten(c *gin.Context) {
 		}
 	}
 
+	// Validate namespace ownership if namespace_id is provided
+	if req.NamespaceID != nil && *req.NamespaceID != "" {
+		if userID == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"error": "Authentication required to use namespace",
+			})
+			return
+		}
+
+		var namespace models.Namespace
+		result := h.db.Where("id = ? AND user_id = ?", *req.NamespaceID, userID).First(&namespace)
+		if result.Error != nil {
+			if result.Error == gorm.ErrRecordNotFound {
+				c.JSON(http.StatusForbidden, gin.H{
+					"error": "Namespace not found or you do not have permission to use it",
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Database error",
+				"details": result.Error.Error(),
+			})
+			return
+		}
+	}
+
 	// Generate UUID for ID field
 	id := uuid.New().String()
 
 	// Create new ShortURL record
 	shortURL := models.ShortURL{
-		ID:     id,
-		Domain: req.Domain,
-		Slug:   slug,
-		URL:    req.URL,
-		UserID: userID,
+		ID:          id,
+		Domain:      req.Domain,
+		Slug:        slug,
+		URL:         req.URL,
+		UserID:      userID,
+		NamespaceID: req.NamespaceID,
 	}
 
 	if err := h.db.Create(&shortURL).Error; err != nil {
