@@ -19,7 +19,6 @@ export function ShortURLDetail() {
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [deleting, setDeleting] = useState<boolean>(false)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<boolean>(false)
-  const [success, setSuccess] = useState<string>("")
 
   // Form state
   const [editedUrl, setEditedUrl] = useState<string>("")
@@ -58,7 +57,6 @@ export function ShortURLDetail() {
 
   const handleEdit = () => {
     setIsEditing(true)
-    setSuccess("")
   }
 
   const handleCancel = () => {
@@ -68,16 +66,12 @@ export function ShortURLDetail() {
       setEditedDomain(shortURL.domain)
       setEditedSlug(shortURL.slug)
     }
-    setSuccess("")
-    setError("")
   }
 
   const handleSave = async () => {
     if (!id || !shortURL) return
 
     setSubmitting(true)
-    setError("")
-    setSuccess("")
 
     try {
       const updates: { url?: string; domain?: string; slug?: string } = {}
@@ -101,11 +95,9 @@ export function ShortURLDetail() {
       const updated = await updateShortURL(id, updates)
       setShortURL(updated)
       setIsEditing(false)
-      setSuccess("Short URL updated successfully!")
       toast.success("Short URL saved successfully!")
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to update short URL"
-      setError(errorMessage)
       toast.error(errorMessage)
     } finally {
       setSubmitting(false)
@@ -124,7 +116,6 @@ export function ShortURLDetail() {
     if (!id) return
 
     setDeleting(true)
-    setError("")
 
     try {
       await deleteShortURL(id)
@@ -132,7 +123,6 @@ export function ShortURLDetail() {
       navigate("/")
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to delete short URL"
-      setError(errorMessage)
       toast.error(errorMessage)
       setShowDeleteConfirm(false)
     } finally {
@@ -204,18 +194,6 @@ export function ShortURLDetail() {
                 Back to Dashboard
               </Button>
             </div>
-
-            {error && (
-              <div className="p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                {error}
-              </div>
-            )}
-
-            {success && (
-              <div className="p-3 text-sm text-green-600 bg-green-50 border border-green-200 rounded-md">
-                {success}
-              </div>
-            )}
 
             <Card className="bg-white dark:bg-background">
               <CardHeader>

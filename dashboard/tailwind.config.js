@@ -8,7 +8,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        mono: ["'Inter'", "ui-monospace", "SFMono-Regular", "Menlo", "Monaco", "Consolas", '"Liberation Mono"', '"Courier New"', "monospace"],
+        sans: ["'Open Sans'", "ui-sans-serif", "system-ui", "sans-serif"],
+        mono: ["'Open Sans'", "ui-sans-serif", "system-ui", "sans-serif"],
       },
       borderRadius: {
         lg: "var(--radius)",
