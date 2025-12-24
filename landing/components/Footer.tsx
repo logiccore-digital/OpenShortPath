@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useTheme } from './theme/ThemeProvider'
 
 export function Footer() {
@@ -13,9 +14,9 @@ export function Footer() {
         <a href="#" className="hover:underline">
           GitHub
         </a>
-        <a href="#" className="hover:underline">
+        <Link href="/docs" className="hover:underline">
           Docs
-        </a>
+        </Link>
         <a href="#" className="hover:underline">
           Terms
         </a>

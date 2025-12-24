@@ -29,16 +29,23 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [isDark, setIsDark] = useState(true);
+  // Initialize from what's already on the document (set by blocking script in layout)
+  // This prevents flash because the script runs before React hydrates
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window !== "undefined") {
+      // Check what the blocking script set on the document
+      const hasDark = document.documentElement.classList.contains("dark");
+      return hasDark;
+    }
+    return true; // Default during SSR (will be corrected on client)
+  });
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Check localStorage for saved theme preference
-    const saved = localStorage.getItem("theme");
-    if (saved === "light") {
-      setIsDark(false);
-    }
+    // Sync with what's already on the document (set by blocking script)
+    const hasDark = document.documentElement.classList.contains("dark");
+    setIsDark(hasDark);
   }, []);
 
   useEffect(() => {

@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { Terminal, Github } from 'lucide-react'
 import { useTheme } from './theme/ThemeProvider'
 
@@ -9,10 +10,12 @@ export function Header() {
   return (
     <header className={`flex justify-between items-start border-b ${theme.border} pb-8 transition-colors duration-300`}>
       <div className="space-y-2">
-        <h1 className={`text-2xl font-bold ${theme.heading} tracking-tighter flex items-center gap-2`}>
-          <Terminal size={20} className={theme.accent} />
-          OpenShortPath_
-        </h1>
+        <Link href="/">
+          <h1 className={`text-2xl font-bold ${theme.heading} tracking-tighter flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer`}>
+            <Terminal size={20} className={theme.accent} />
+            OpenShortPath_
+          </h1>
+        </Link>
         <p className={`${theme.subtext} text-sm max-w-sm`}>
           The no-nonsense, open-source link shortener for developers.
         </p>
