@@ -19,8 +19,6 @@ export function Dashboard() {
   const [total, setTotal] = useState<number>(0)
   const [loading, setLoading] = useState<boolean>(false)
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const [error, setError] = useState<string>("")
-  const [success, setSuccess] = useState<string>("")
 
   const limit = 20
 
@@ -34,7 +32,7 @@ export function Dashboard() {
           setSelectedDomain(domainList[0])
         }
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load domains")
+        toast.error(err instanceof Error ? err.message : "Failed to load domains")
       }
     }
     loadDomains()
@@ -44,14 +42,13 @@ export function Dashboard() {
   useEffect(() => {
     const loadShortURLs = async () => {
       setLoading(true)
-      setError("")
       try {
         const response = await listShortURLs(currentPage, limit)
         setShortURLs(response.urls)
         setTotalPages(response.total_pages)
         setTotal(response.total)
       } catch (err) {
-        setError(err instanceof Error ? err.message : "Failed to load short URLs")
+        toast.error(err instanceof Error ? err.message : "Failed to load short URLs")
       } finally {
         setLoading(false)
       }
@@ -62,12 +59,9 @@ export function Dashboard() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setSubmitting(true)
-    setError("")
-    setSuccess("")
 
     try {
       await shorten(selectedDomain, url, slug || undefined)
-      setSuccess("Short URL created successfully!")
       toast.success("Short URL created successfully!")
       // Reset form
       setUrl("")
@@ -79,7 +73,6 @@ export function Dashboard() {
       setTotal(response.total)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to create short URL"
-      setError(errorMessage)
       toast.error(errorMessage)
     } finally {
       setSubmitting(false)
@@ -111,16 +104,6 @@ export function Dashboard() {
             </CardHeader>
             <CardContent>
               <form onSubmit={handleSubmit} className="space-y-2">
-                {error && (
-                  <div className="p-3 text-sm text-red-400 bg-red-950/20 border border-red-900/50">
-                    {error}
-                  </div>
-                )}
-                {success && (
-                  <div className="p-3 text-sm text-emerald-400 bg-emerald-950/20 border border-emerald-900/50">
-                    {success}
-                  </div>
-                )}
                 {/* Form inputs: stacked on mobile, inline on desktop */}
                 <div className="flex flex-col sm:flex-row gap-0">
                   {/* Domain select */}

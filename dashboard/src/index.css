@@ -70,7 +70,7 @@
   
   body {
     @apply bg-background text-foreground transition-colors duration-300;
-    font-family: 'Inter', monospace;
+    font-family: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
   }
   
   /* Fix dropdown option colors for dark mode on Windows */
