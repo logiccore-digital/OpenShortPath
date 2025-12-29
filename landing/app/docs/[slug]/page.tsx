@@ -157,9 +157,9 @@ export default async function DocPage({
         </a>
       ),
       blockquote: ({ children, ...props }: any) => (
-        <blockquote {...props}>
+        <div {...props} className="my-4 pl-4 border-l-4 border-gray-200 dark:border-gray-800 italic text-gray-500 dark:text-gray-400">
           {children}
-        </blockquote>
+        </div>
       ),
       hr: ({ ...props }: any) => (
         <hr {...props} />

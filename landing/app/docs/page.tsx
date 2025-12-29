@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { FileText, ArrowRight } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 // List of available docs (flat structure)
 const docs = [
@@ -12,6 +13,16 @@ const docs = [
     slug: "plans-and-limits",
     title: "Plans and Limits",
     description: "Comprehensive guide to all available plans, usage limits, anonymous access, and verified access options.",
+  },
+  {
+    slug: "terms-of-service",
+    title: "Terms of Service",
+    description: "Legal terms and conditions for using OpenShortPath Cloud, including warranty disclaimers and prohibited uses.",
+  },
+  {
+    slug: "privacy-policy",
+    title: "Privacy Policy",
+    description: "How we collect, use, and protect your information, including data handling practices and your privacy rights.",
   },
 ];
 
@@ -32,7 +43,7 @@ export default function DocsPage() {
           <Link
             key={doc.slug}
             href={`/docs/${doc.slug}`}
-            className="group block p-8 border border-gray-200 dark:border-gray-800 hover:border-emerald-500 dark:hover:border-emerald-500 rounded-xl transition-all duration-300 bg-white dark:bg-[#111] hover:shadow-lg dark:hover:shadow-emerald-500/10"
+            className="group block p-8 border border-gray-200 dark:border-gray-800 hover:border-emerald-500 dark:hover:border-emerald-500 transition-all duration-300 bg-white dark:bg-[#111]"
           >
             <div className="flex flex-col h-full space-y-4">
               <div className="p-3 bg-emerald-50 dark:bg-emerald-500/10 rounded-lg w-fit transition-colors group-hover:bg-emerald-100 dark:group-hover:bg-emerald-500/20">
@@ -52,7 +63,7 @@ export default function DocsPage() {
         ))}
       </div>
 
-      <div className="pt-12 border-t border-gray-100 dark:border-gray-800">
+      {/* <div className="pt-12 border-t border-gray-100 dark:border-gray-800">
         <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-6">
           Quick Resources
         </h3>
@@ -79,7 +90,7 @@ export default function DocsPage() {
             </ul>
           </div>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 }

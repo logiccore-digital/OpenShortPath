@@ -28,11 +28,12 @@ export function Header() {
           [{isDark ? 'light_mode' : 'dark_mode'}]
         </button>
         <a
-          href="#"
+          href="https://github.com/logiccore-digital/OpenShortPath"
+          target="_blank"
           className={`group flex items-center gap-2 text-sm ${theme.subtext} hover:${theme.heading} transition-colors`}
         >
           <Github size={16} />
-          <span className="hidden sm:inline group-hover:underline decoration-1 underline-offset-4">/openshortpath</span>
+          <span className="hidden sm:inline group-hover:underline decoration-1 underline-offset-4">OpenShortPath</span>
         </a>
       </div>
     </header>
