@@ -4,7 +4,7 @@ import { Hash, Heart } from 'lucide-react'
 import { useTheme } from './theme/ThemeProvider'
 
 export function DomainsSection() {
-  const { theme } = useTheme()
+  const { theme, isDark } = useTheme()
 
   return (
     <section className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
@@ -18,13 +18,21 @@ export function DomainsSection() {
         <ul className={`space-y-2 text-sm ${theme.subtext}`}>
           <li className="flex justify-between items-center">
             <span>lcd.sh</span>
-            <span className="text-emerald-500 text-[10px] uppercase tracking-wider border border-emerald-900 bg-emerald-900/10 px-1.5 py-0.5 rounded">
+            <span className={`text-[10px] uppercase tracking-wider border px-1.5 py-0.5 rounded ${
+              isDark 
+                ? 'text-emerald-500 border-emerald-900 bg-emerald-900/10' 
+                : 'text-emerald-600 border-emerald-500 bg-emerald-50'
+            }`}>
               Available
             </span>
           </li>
           <li className="flex justify-between items-center">
             <span>mix.lol</span>
-            <span className="text-emerald-500 text-[10px] uppercase tracking-wider border border-emerald-900 bg-emerald-900/10 px-1.5 py-0.5 rounded">
+            <span className={`text-[10px] uppercase tracking-wider border px-1.5 py-0.5 rounded ${
+              isDark 
+                ? 'text-emerald-500 border-emerald-900 bg-emerald-900/10' 
+                : 'text-emerald-600 border-emerald-500 bg-emerald-50'
+            }`}>
               Available
             </span>
           </li>

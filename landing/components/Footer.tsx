@@ -17,12 +17,12 @@ export function Footer() {
         <Link href="/docs" className="hover:underline">
           Docs
         </Link>
-        <a href="#" className="hover:underline">
+        <Link href="/docs/terms-of-service" className="hover:underline">
           Terms
-        </a>
-        <a href="#" className="hover:underline">
+        </Link>
+        <Link href="/docs/privacy-policy" className="hover:underline">
           Privacy
-        </a>
+        </Link>
       </div>
       <div>© {new Date().getFullYear()} OpenShortPath.</div>
     </footer>
