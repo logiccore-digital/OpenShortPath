@@ -143,7 +143,7 @@ func TestConfig_Validate_UnsupportedAlgorithm(t *testing.T) {
 }
 
 func TestConfig_Validate_NoAuthProvider(t *testing.T) {
-	// When auth_provider is empty or not set, validation should pass
+	// When auth_provider is empty or not set, validation should fail
 	cfg := &Config{
 		JWT: &JWT{
 			Algorithm: "HS256",
@@ -152,7 +152,23 @@ func TestConfig_Validate_NoAuthProvider(t *testing.T) {
 	}
 
 	err := cfg.Validate()
-	assert.NoError(t, err)
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "auth_provider is required")
+}
+
+func TestConfig_Validate_InvalidAuthProvider(t *testing.T) {
+	// When auth_provider has invalid value, validation should fail
+	cfg := &Config{
+		AuthProvider: "invalid",
+		JWT: &JWT{
+			Algorithm: "HS256",
+			SecretKey: "test-secret-key",
+		},
+	}
+
+	err := cfg.Validate()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid auth_provider")
 }
 
 func TestConfig_Validate_NoJWTConfig(t *testing.T) {
@@ -167,8 +183,9 @@ func TestConfig_Validate_NoJWTConfig(t *testing.T) {
 }
 
 func TestConfig_Validate_EmptyAlgorithm(t *testing.T) {
-	// When algorithm is empty, should pass (optional JWT config)
+	// When algorithm is empty but auth_provider is set, should pass
 	cfg := &Config{
+		AuthProvider: "external_jwt",
 		JWT: &JWT{
 			Algorithm: "",
 		},
@@ -177,4 +194,3 @@ func TestConfig_Validate_EmptyAlgorithm(t *testing.T) {
 	err := cfg.Validate()
 	assert.NoError(t, err)
 }
-
