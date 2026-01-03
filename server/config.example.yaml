@@ -16,27 +16,26 @@ port: 3000
 # available_short_domains:
 #   - localhost:3000
 
-# Authentication provider (optional)
-# Options: "external_jwt" (default) or "local"
-# - "external_jwt": JWT tokens are provided externally, server only validates them
+# Authentication provider (required)
+# Options: "local" or "external_jwt"
 # - "local": Server handles authentication via username/password and issues JWT tokens
 #   When set to "local", the login endpoint at /api/v1/login is enabled
-# auth_provider: external_jwt
+# - "external_jwt": JWT tokens are provided externally, server only validates them
+auth_provider: local
 
-# JWT Authentication (optional)
-# If provided, enables optional JWT authentication for all API routes
+# JWT Authentication (required)
 # JWT tokens are passed as Bearer tokens in the Authorization header
 # When a valid JWT token is provided, the 'sub' claim is extracted as User ID
-# jwt:
-#   # Algorithm: "HS256" for symmetric (HMAC) or "RS256" for asymmetric (RSA)
-#   algorithm: HS256
-#   # Secret key for HS256 (required if using HS256)
-#   secret_key: your-secret-key-here
-#   # Public key for RS256 in PEM format (required if using RS256)
-#   # public_key: |
-#   #   -----BEGIN PUBLIC KEY-----
-#   #   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
-#   #   -----END PUBLIC KEY-----
+jwt:
+  # Algorithm: "HS256" for symmetric (HMAC) or "RS256" for asymmetric (RSA)
+  algorithm: HS256
+  # Secret key for HS256 (required if using HS256)
+  secret_key: your-secret-key-here
+  # Public key for RS256 in PEM format (required if using RS256)
+  # public_key: |
+  #   -----BEGIN PUBLIC KEY-----
+  #   MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
+  #   -----END PUBLIC KEY-----
 
 # Example: External JWT with RS256 configuration
 # auth_provider: external_jwt
@@ -44,16 +43,8 @@ port: 3000
 #   algorithm: RS256
 #   public_key: |
 #     -----BEGIN PUBLIC KEY-----
-#     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyOuJvX8X8X8X8X8X8X8X
-#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
-#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
+#     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
 #     -----END PUBLIC KEY-----
-
-# Example: Local authentication with HS256
-# auth_provider: local
-# jwt:
-#   algorithm: HS256
-#   secret_key: your-secret-key-here
 
 # Example: Local authentication with RS256
 # auth_provider: local
@@ -67,9 +58,7 @@ port: 3000
 #   # Public key is required for verifying tokens
 #   public_key: |
 #     -----BEGIN PUBLIC KEY-----
-#     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAyOuJvX8X8X8X8X8X8X8X
-#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
-#     8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X8X
+#     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
 #     -----END PUBLIC KEY-----
 
 # Admin password for administrative API endpoints
@@ -81,4 +70,3 @@ port: 3000
 # If provided, the /dashboard route will proxy requests to this URL instead of serving embedded files
 # This is useful for development. Leave empty or unset to use embedded dashboard files.
 # dashboard_dev_server_url: http://localhost:5173
-
