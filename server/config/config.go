@@ -23,6 +23,7 @@ type Config struct {
 	JWT                   *JWT     `yaml:"jwt,omitempty"`
 	AdminPassword         string   `yaml:"admin_password"`           // Super long password for administrative purposes
 	DashboardDevServerURL string   `yaml:"dashboard_dev_server_url"` // URL for dashboard dev server (optional, for development)
+	LandingDevServerURL   string   `yaml:"landing_dev_server_url"`  // URL for landing page dev server (optional, for development)
 }
 
 func LoadConfig(configPath string) (*Config, error) {

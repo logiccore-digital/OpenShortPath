@@ -33,3 +33,6 @@ config.yaml
 
 # Dashboard build artifacts (copied from dashboard/dist)
 dashboard-dist
+
+# Landing page build artifacts (copied from landing/out)
+landing-dist
