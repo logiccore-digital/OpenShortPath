@@ -89,6 +89,10 @@ if [ -n "$JWT_ALGORITHM" ] || [ -n "$JWT_SECRET_KEY" ] || [ -n "$JWT_PUBLIC_KEY"
     fi
 fi
 
+echo "Executing server with config:"
+echo "--------------------------------"
+cat "$CONFIG_FILE"
+echo "--------------------------------"
+
 # Execute the server with the generated config
 exec /app/server --config "$CONFIG_FILE"
-
