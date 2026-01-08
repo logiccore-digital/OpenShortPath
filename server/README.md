@@ -38,11 +38,13 @@ The server can be run in a Docker container with configuration provided via envi
 
 ### Building the Docker Image
 
-From the `server` directory:
+From the project root directory:
 
 ```bash
 docker build -t openshortpath-server .
 ```
+
+The Dockerfile follows the same build process as the Makefile `server` target: it builds the dashboard first, copies it to `server/dashboard-dist`, then builds the server.
 
 ### Running with Docker
 
