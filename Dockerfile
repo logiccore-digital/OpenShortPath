@@ -13,6 +13,14 @@ COPY dashboard/ ./dashboard/
 WORKDIR /build/dashboard
 RUN npm install && npm run build
 
+# Copy landing page files
+WORKDIR /build
+COPY landing/ ./landing/
+
+# Build landing page
+WORKDIR /build/landing
+RUN npm install && npm run build
+
 # Copy server go mod files first for dependency caching
 WORKDIR /build
 COPY server/go.mod server/go.sum ./server/
@@ -30,6 +38,12 @@ RUN rm -rf server/dashboard-dist && \
     mkdir -p server/dashboard-dist && \
     cp -r dashboard/dist/* server/dashboard-dist/ 2>/dev/null || true && \
     echo "placeholder" > server/dashboard-dist/placeholder.txt
+
+# Copy landing page build to server directory (matching Makefile behavior)
+RUN rm -rf server/landing-dist && \
+    mkdir -p server/landing-dist && \
+    cp -r landing/out/* server/landing-dist/ 2>/dev/null || true && \
+    echo "placeholder" > server/landing-dist/placeholder.txt
 
 # Build the server application
 WORKDIR /build/server

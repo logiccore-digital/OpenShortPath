@@ -5,7 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net/http"
+	"net/http/httptest"
 	"os"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/driver/postgres"
@@ -20,6 +23,9 @@ import (
 
 //go:embed dashboard-dist
 var dashboardFS embed.FS
+
+//go:embed landing-dist/*
+var landingFS embed.FS
 
 func main() {
 	// Parse command-line flags
@@ -86,25 +92,12 @@ func main() {
 	log.Printf("Rate limiting enabled for /api/v1/* endpoints")
 
 	// Initialize handlers with database
-	helloHandler := handlers.NewHelloHandler(db)
 	shortenHandler := handlers.NewShortenHandler(db, cfg)
 	redirectHandler := handlers.NewRedirectHandler(db, cfg)
 	authProviderHandler := handlers.NewAuthProviderHandler(cfg)
 	domainsHandler := handlers.NewDomainsHandler(cfg)
 
-	// Register dashboard route (must be before /:slug route to avoid conflicts)
-	dashboardHandler := handlers.NewDashboardHandler(cfg, dashboardFS)
-	r.Any("/dashboard", dashboardHandler.ServeDashboard)       // Match /dashboard exactly
-	r.Any("/dashboard/*path", dashboardHandler.ServeDashboard) // Match /dashboard/*
-	log.Printf("Dashboard enabled at /dashboard/*")
-
-	// Routes
-	r.GET("/", helloHandler.HelloWorld)
-	// Note: Dashboard routes are registered above, so they take precedence
-	// Use catch-all route to handle both /:slug and /:namespace/:slug patterns
-	// This must come after dashboard routes to avoid conflicts
-	r.NoRoute(redirectHandler.Redirect)
-
+	// Register API routes first (highest priority)
 	// Shorten endpoint - authentication is optional (handled by OptionalAuth middleware)
 	// Rate limiting is applied per IP for anonymous users, per user for authenticated users
 	apiV1.POST("/shorten", shortenHandler.Shorten)
@@ -184,6 +177,98 @@ func main() {
 
 		log.Printf("API key management endpoints enabled at /api/v1/api-keys/*")
 	}
+
+	// Register dashboard route (must be before landing routes to avoid conflicts)
+	dashboardHandler := handlers.NewDashboardHandler(cfg, dashboardFS)
+	r.Any("/dashboard", dashboardHandler.ServeDashboard)       // Match /dashboard exactly
+	r.Any("/dashboard/*path", dashboardHandler.ServeDashboard) // Match /dashboard/*
+	log.Printf("Dashboard enabled at /dashboard/*")
+
+	// Register landing page route for root
+	landingHandler := handlers.NewLandingHandler(cfg, landingFS)
+	r.Any("/", landingHandler.ServeLanding)
+	log.Printf("Landing page enabled at /")
+
+	// NoRoute handler: try redirect first (for short URLs), then fall back to landing page
+	// This allows short URLs to work while also supporting landing page routes like /docs
+	r.NoRoute(func(c *gin.Context) {
+		// Skip if it's an API or dashboard route (shouldn't happen, but safety check)
+		path := c.Request.URL.Path
+		if strings.HasPrefix(path, "/api/") || strings.HasPrefix(path, "/dashboard/") {
+			c.JSON(http.StatusNotFound, gin.H{
+				"error": "Route not found",
+			})
+			return
+		}
+
+		// Reserved paths that should always be served by landing page (Next.js routes and static assets)
+		reservedPaths := []string{
+			"/_next",      // Next.js static assets and internal routes
+			"/docs",       // Landing page docs routes
+			"/favicon.ico", // Favicon
+			"/robots.txt",  // Robots.txt
+			"/sitemap.xml", // Sitemap
+		}
+
+		// Check if path is a reserved landing page path
+		isReservedPath := false
+		for _, reserved := range reservedPaths {
+			if path == reserved || strings.HasPrefix(path, reserved+"/") {
+				isReservedPath = true
+				break
+			}
+		}
+
+		// If it's a reserved path, serve landing page directly
+		if isReservedPath {
+			landingHandler.ServeLanding(c)
+			return
+		}
+
+		// Check if path looks like a short URL (1-2 path segments, not reserved)
+		// If it does, try redirect first; otherwise serve landing page directly
+		pathParts := strings.Split(strings.Trim(path, "/"), "/")
+		isPotentialShortURL := len(pathParts) <= 2 && len(pathParts) > 0
+
+		// Also check if first segment is a reserved namespace name
+		if isPotentialShortURL && len(pathParts) > 0 {
+			firstSegment := strings.ToLower(pathParts[0])
+			if handlers.IsReservedNamespaceName(firstSegment) {
+				// First segment is reserved, serve landing page
+				landingHandler.ServeLanding(c)
+				return
+			}
+		}
+
+		if isPotentialShortURL {
+			// Use response recorder to buffer redirect handler's response
+			// This allows us to check if it found a short URL before committing the response
+			w := httptest.NewRecorder()
+			newContext, _ := gin.CreateTestContext(w)
+			newContext.Request = c.Request
+			newContext.Params = c.Params
+			
+			// Try redirect handler with test context
+			redirectHandler.Redirect(newContext)
+			
+			// Check if redirect found a short URL (status 301)
+			if w.Code == http.StatusMovedPermanently {
+				// Copy the redirect response to actual response
+				for k, v := range w.Header() {
+					for _, val := range v {
+						c.Writer.Header().Add(k, val)
+					}
+				}
+				c.Writer.WriteHeader(w.Code)
+				c.Writer.Write(w.Body.Bytes())
+				return
+			}
+			// Redirect didn't find a match (returned 404), fall through to serve landing page
+		}
+
+		// Serve landing page (either because it's not a short URL pattern, or redirect didn't find a match)
+		landingHandler.ServeLanding(c)
+	})
 
 	// Start server
 	port := os.Getenv("PORT")
