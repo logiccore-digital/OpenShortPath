@@ -1,7 +1,8 @@
 'use client'
 
 import Link from 'next/link'
-import { Terminal, Github } from 'lucide-react'
+import Image from 'next/image'
+import { Github } from 'lucide-react'
 import { useTheme } from './theme/ThemeProvider'
 
 export function Header() {
@@ -12,7 +13,13 @@ export function Header() {
       <div className="space-y-2">
         <Link href="/">
           <h1 className={`text-2xl font-bold ${theme.heading} tracking-tighter flex items-center gap-2 hover:opacity-80 transition-opacity cursor-pointer`}>
-            <Terminal size={20} className={theme.accent} />
+            <Image 
+              src="/logo.svg" 
+              alt="OpenShortPath Logo" 
+              width={24} 
+              height={24}
+              className="flex-shrink-0"
+            />
             OpenShortPath_
           </h1>
         </Link>
