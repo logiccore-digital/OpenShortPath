@@ -2,6 +2,7 @@
 
 export interface AuthProviderResponse {
   auth_provider: "local" | "external_jwt"
+  enable_signup: boolean
 }
 
 export interface LoginRequest {
@@ -10,6 +11,15 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
+  token: string
+}
+
+export interface SignupRequest {
+  username: string
+  password: string
+}
+
+export interface SignupResponse {
   token: string
 }
 

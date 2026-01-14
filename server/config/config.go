@@ -20,6 +20,7 @@ type Config struct {
 	SQLitePath            string   `yaml:"sqlite_path"`
 	AvailableShortDomains []string `yaml:"available_short_domains"`
 	AuthProvider          string   `yaml:"auth_provider"` // "external_jwt" or "local"
+	EnableSignup          bool     `yaml:"enable_signup"` // Enable user signup (only used when auth_provider is "local")
 	JWT                   *JWT     `yaml:"jwt,omitempty"`
 	AdminPassword         string   `yaml:"admin_password"`           // Super long password for administrative purposes
 	DashboardDevServerURL string   `yaml:"dashboard_dev_server_url"` // URL for dashboard dev server (optional, for development)
@@ -31,6 +32,7 @@ func LoadConfig(configPath string) (*Config, error) {
 		Port:                  3000,                       // default port
 		SQLitePath:            "db.sqlite",                // default SQLite path
 		AvailableShortDomains: []string{"localhost:3000"}, // default short domains
+		EnableSignup:          false,                      // default signup disabled
 	}
 
 	if configPath == "" {

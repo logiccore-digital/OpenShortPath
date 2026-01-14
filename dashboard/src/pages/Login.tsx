@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { getAuthProvider, login } from "../services/api"
@@ -9,6 +9,7 @@ import type { AuthProviderResponse } from "../types/api"
 export function Login() {
   const navigate = useNavigate()
   const [authProvider, setAuthProvider] = useState<"local" | "external_jwt" | null>(null)
+  const [enableSignup, setEnableSignup] = useState(false)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [username, setUsername] = useState("")
@@ -26,6 +27,7 @@ export function Login() {
     getAuthProvider()
       .then((response: AuthProviderResponse) => {
         setAuthProvider(response.auth_provider)
+        setEnableSignup(response.enable_signup)
         setLoading(false)
       })
       .catch((err) => {
@@ -112,6 +114,17 @@ export function Login() {
               <Button type="submit" className="w-full" disabled={submitting}>
                 {submitting ? "Logging in..." : "Login"}
               </Button>
+              {enableSignup && (
+                <div className="text-center text-sm">
+                  <span className="text-muted-foreground">Don't have an account? </span>
+                  <Link
+                    to="/signup"
+                    className="text-primary hover:underline"
+                  >
+                    Sign up
+                  </Link>
+                </div>
+              )}
             </form>
           ) : (
             <div className="space-y-4">

@@ -194,3 +194,42 @@ func TestConfig_Validate_EmptyAlgorithm(t *testing.T) {
 	err := cfg.Validate()
 	assert.NoError(t, err)
 }
+
+func TestConfig_EnableSignup_Default(t *testing.T) {
+	// Test that EnableSignup defaults to false
+	cfg, err := LoadConfig("")
+	assert.NoError(t, err)
+	assert.False(t, cfg.EnableSignup)
+}
+
+func TestConfig_EnableSignup_True(t *testing.T) {
+	// Test that EnableSignup can be set to true
+	cfg := &Config{
+		AuthProvider: "local",
+		EnableSignup: true,
+		JWT: &JWT{
+			Algorithm: "HS256",
+			SecretKey: "test-secret-key",
+		},
+	}
+
+	err := cfg.Validate()
+	assert.NoError(t, err)
+	assert.True(t, cfg.EnableSignup)
+}
+
+func TestConfig_EnableSignup_False(t *testing.T) {
+	// Test that EnableSignup can be set to false explicitly
+	cfg := &Config{
+		AuthProvider: "local",
+		EnableSignup: false,
+		JWT: &JWT{
+			Algorithm: "HS256",
+			SecretKey: "test-secret-key",
+		},
+	}
+
+	err := cfg.Validate()
+	assert.NoError(t, err)
+	assert.False(t, cfg.EnableSignup)
+}
