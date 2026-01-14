@@ -56,6 +56,10 @@ if [ -n "$AUTH_PROVIDER" ]; then
     write_yaml_key "auth_provider" "$AUTH_PROVIDER"
 fi
 
+if [ -n "$ENABLE_SIGNUP" ]; then
+    write_yaml_key "enable_signup" "$ENABLE_SIGNUP"
+fi
+
 if [ -n "$DASHBOARD_DEV_SERVER_URL" ]; then
     write_yaml_key "dashboard_dev_server_url" "$DASHBOARD_DEV_SERVER_URL"
 fi

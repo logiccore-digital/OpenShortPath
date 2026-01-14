@@ -86,6 +86,20 @@ docker run -d \
   openshortpath-server
 ```
 
+#### With Signup Enabled
+
+```bash
+docker run -d \
+  -p 3000:3000 \
+  -e PORT=3000 \
+  -e AUTH_PROVIDER=local \
+  -e ENABLE_SIGNUP=true \
+  -e JWT_ALGORITHM=HS256 \
+  -e JWT_SECRET_KEY="your-secret-key-here" \
+  -e ADMIN_PASSWORD="your-super-long-admin-password-here" \
+  openshortpath-server
+```
+
 #### With JWT Authentication (RS256)
 
 For RS256, you need to provide multi-line public/private keys. You can do this by:
@@ -113,7 +127,7 @@ docker run -d \
 2. **Using docker-compose with environment file:**
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   server:
     build: .
@@ -144,19 +158,20 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...
 
 The following environment variables map to configuration keys:
 
-| Environment Variable | YAML Key | Type | Required | Notes |
-|---------------------|----------|------|----------|-------|
-| `PORT` | `port` | int | No | Server port (default: 3000) |
-| `POSTGRES_URI` | `postgres_uri` | string | No | PostgreSQL connection URI. If set, uses Postgres instead of SQLite |
-| `SQLITE_PATH` | `sqlite_path` | string | No | SQLite database path (default: `db.sqlite`) |
-| `AVAILABLE_SHORT_DOMAINS` | `available_short_domains` | list | No | Comma-separated list of domains (e.g., `localhost:3000,example.com`) |
-| `AUTH_PROVIDER` | `auth_provider` | string | Yes* | `"local"` or `"external_jwt"` |
-| `JWT_ALGORITHM` | `jwt.algorithm` | string | No | `"HS256"` or `"RS256"` |
-| `JWT_SECRET_KEY` | `jwt.secret_key` | string | No* | Required if using HS256 |
-| `JWT_PUBLIC_KEY` | `jwt.public_key` | string | No* | Required if using RS256 (supports multi-line) |
-| `JWT_PRIVATE_KEY` | `jwt.private_key` | string | No* | Required for RS256 with local auth (supports multi-line) |
-| `ADMIN_PASSWORD` | `admin_password` | string | No | Admin API password |
-| `DASHBOARD_DEV_SERVER_URL` | `dashboard_dev_server_url` | string | No | Development server URL for dashboard |
+| Environment Variable       | YAML Key                   | Type   | Required | Notes                                                                       |
+| -------------------------- | -------------------------- | ------ | -------- | --------------------------------------------------------------------------- |
+| `PORT`                     | `port`                     | int    | No       | Server port (default: 3000)                                                 |
+| `POSTGRES_URI`             | `postgres_uri`             | string | No       | PostgreSQL connection URI. If set, uses Postgres instead of SQLite          |
+| `SQLITE_PATH`              | `sqlite_path`              | string | No       | SQLite database path (default: `db.sqlite`)                                 |
+| `AVAILABLE_SHORT_DOMAINS`  | `available_short_domains`  | list   | No       | Comma-separated list of domains (e.g., `localhost:3000,example.com`)        |
+| `AUTH_PROVIDER`            | `auth_provider`            | string | Yes\*    | `"local"` or `"external_jwt"`                                               |
+| `ENABLE_SIGNUP`            | `enable_signup`            | bool   | No       | Enable user signup (default: `false`, only used when `AUTH_PROVIDER=local`) |
+| `JWT_ALGORITHM`            | `jwt.algorithm`            | string | No       | `"HS256"` or `"RS256"`                                                      |
+| `JWT_SECRET_KEY`           | `jwt.secret_key`           | string | No\*     | Required if using HS256                                                     |
+| `JWT_PUBLIC_KEY`           | `jwt.public_key`           | string | No\*     | Required if using RS256 (supports multi-line)                               |
+| `JWT_PRIVATE_KEY`          | `jwt.private_key`          | string | No\*     | Required for RS256 with local auth (supports multi-line)                    |
+| `ADMIN_PASSWORD`           | `admin_password`           | string | No       | Admin API password                                                          |
+| `DASHBOARD_DEV_SERVER_URL` | `dashboard_dev_server_url` | string | No       | Development server URL for dashboard                                        |
 
 \* Required based on `AUTH_PROVIDER` and `JWT_ALGORITHM` settings. See the Configuration section for validation rules.
 
@@ -167,7 +182,7 @@ For JWT keys (`JWT_PUBLIC_KEY` and `JWT_PRIVATE_KEY`), you can pass multi-line P
 ### Docker Compose Example
 
 ```yaml
-version: '3.8'
+version: "3.8"
 services:
   openshortpath-server:
     build: .
@@ -209,6 +224,8 @@ The server supports an optional YAML configuration file specified with the `--co
 - `postgres_uri` (string): PostgreSQL connection URI. If provided, the server will use Postgres instead of SQLite.
 - `sqlite_path` (string): Path to SQLite database file (default: `db.sqlite`)
 - `available_short_domains` (list of strings): List of domains used to shorten URLs (default: `["localhost:3000"]`)
+- `auth_provider` (string, required): Authentication provider - `"local"` or `"external_jwt"`
+- `enable_signup` (bool, optional): Enable user signup (default: `false`, only used when `auth_provider` is `"local"`)
 - `jwt` (object, optional): JWT authentication configuration
   - `algorithm` (string): JWT signing algorithm - `"HS256"` for symmetric (HMAC) or `"RS256"` for asymmetric (RSA)
   - `secret_key` (string): Secret key for HS256 algorithm (required if using HS256)
@@ -261,6 +278,16 @@ jwt:
     -----BEGIN PUBLIC KEY-----
     MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA...
     -----END PUBLIC KEY-----
+```
+
+**Local Authentication with Signup Enabled:**
+
+```yaml
+auth_provider: local
+enable_signup: true
+jwt:
+  algorithm: HS256
+  secret_key: your-secret-key-here
 ```
 
 ## JWT Authentication
