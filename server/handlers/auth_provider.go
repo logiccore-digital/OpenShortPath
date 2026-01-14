@@ -21,5 +21,6 @@ func NewAuthProviderHandler(cfg *config.Config) *AuthProviderHandler {
 func (h *AuthProviderHandler) GetAuthProvider(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"auth_provider": h.cfg.AuthProvider,
+		"enable_signup": h.cfg.EnableSignup,
 	})
 }

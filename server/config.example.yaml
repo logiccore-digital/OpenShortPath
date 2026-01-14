@@ -23,6 +23,11 @@ port: 3000
 # - "external_jwt": JWT tokens are provided externally, server only validates them
 auth_provider: local
 
+# Enable user signup (optional, default: false)
+# Only used when auth_provider is "local"
+# When set to true, users can register new accounts via the /api/v1/signup endpoint
+# enable_signup: false
+
 # JWT Authentication (required)
 # JWT tokens are passed as Bearer tokens in the Authorization header
 # When a valid JWT token is provided, the 'sub' claim is extracted as User ID

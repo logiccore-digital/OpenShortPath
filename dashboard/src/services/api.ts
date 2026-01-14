@@ -2,6 +2,8 @@ import {
   AuthProviderResponse,
   LoginRequest,
   LoginResponse,
+  SignupRequest,
+  SignupResponse,
   ShortenRequest,
   ShortURL,
   ListShortURLsResponse,
@@ -113,6 +115,17 @@ export async function getDomains(): Promise<string[]> {
 export async function login(username: string, password: string): Promise<LoginResponse> {
   const request: LoginRequest = { username, password }
   return apiRequest<LoginResponse>("/login", {
+    method: "POST",
+    body: JSON.stringify(request),
+  })
+}
+
+/**
+ * Signup with username and password (local auth only, when signup is enabled)
+ */
+export async function signup(username: string, password: string): Promise<SignupResponse> {
+  const request: SignupRequest = { username, password }
+  return apiRequest<SignupResponse>("/signup", {
     method: "POST",
     body: JSON.stringify(request),
   })

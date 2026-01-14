@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom"
 import { Toaster } from "sonner"
 import { Dashboard } from "./pages/Dashboard"
 import { Login } from "./pages/Login"
+import { Signup } from "./pages/Signup"
 import { ShortURLDetail } from "./pages/ShortURLDetail"
 import { Account } from "./pages/Account"
 import { Namespaces } from "./pages/Namespaces"
@@ -15,6 +16,7 @@ function App() {
         <Toaster position="bottom-right" richColors />
         <Routes>
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route
           path="/"
           element={

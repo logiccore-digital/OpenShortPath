@@ -85,11 +85,9 @@ func main() {
 		log.Printf("API key authentication enabled")
 	}
 
-	// Create API v1 route group with rate limiting middleware
+	// Create API v1 route group
 	// Rate limiting middleware runs after OptionalAuth so user context is available
 	apiV1 := r.Group("/api/v1")
-	apiV1.Use(middleware.RateLimitMiddleware(db))
-	log.Printf("Rate limiting enabled for /api/v1/* endpoints")
 
 	// Initialize handlers with database
 	shortenHandler := handlers.NewShortenHandler(db, cfg)
@@ -99,9 +97,11 @@ func main() {
 
 	// Register API routes first (highest priority)
 	// Shorten endpoint - authentication is optional (handled by OptionalAuth middleware)
-	// Rate limiting is applied per IP for anonymous users, per user for authenticated users
-	apiV1.POST("/shorten", shortenHandler.Shorten)
+	// Rate limiting is applied only to the shorten endpoint per IP for anonymous users, per user for authenticated users
+	apiV1.POST("/shorten", middleware.RateLimitMiddleware(db), shortenHandler.Shorten)
+	log.Printf("Rate limiting enabled for /api/v1/shorten endpoint")
 
+	// Public endpoints without rate limiting
 	apiV1.GET("/auth-provider", authProviderHandler.GetAuthProvider)
 	apiV1.GET("/domains", domainsHandler.GetDomains)
 
@@ -110,6 +110,13 @@ func main() {
 		loginHandler := handlers.NewLoginHandler(db, cfg.JWT)
 		apiV1.POST("/login", loginHandler.Login)
 		log.Printf("Login endpoint enabled at /api/v1/login")
+
+		// Register signup endpoint only if signup is enabled
+		if cfg.EnableSignup {
+			signupHandler := handlers.NewSignupHandler(db, cfg.JWT)
+			apiV1.POST("/signup", signupHandler.Signup)
+			log.Printf("Signup endpoint enabled at /api/v1/signup")
+		}
 	}
 
 	// Register admin endpoints if admin password is configured
