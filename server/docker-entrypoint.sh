@@ -60,6 +60,19 @@ if [ -n "$ENABLE_SIGNUP" ]; then
     write_yaml_key "enable_signup" "$ENABLE_SIGNUP"
 fi
 
+# Write Clerk configuration if any Clerk env var is set
+if [ -n "$CLERK_PUBLISHABLE_KEY" ] || [ -n "$CLERK_SECRET_KEY" ]; then
+    echo "clerk:" >> "$CONFIG_FILE"
+    
+    if [ -n "$CLERK_PUBLISHABLE_KEY" ]; then
+        write_yaml_key "  publishable_key" "$CLERK_PUBLISHABLE_KEY"
+    fi
+    
+    if [ -n "$CLERK_SECRET_KEY" ]; then
+        write_yaml_key "  secret_key" "$CLERK_SECRET_KEY"
+    fi
+fi
+
 if [ -n "$DASHBOARD_DEV_SERVER_URL" ]; then
     write_yaml_key "dashboard_dev_server_url" "$DASHBOARD_DEV_SERVER_URL"
 fi

@@ -10,20 +10,26 @@ import (
 
 	"openshortpath/server/config"
 	"openshortpath/server/constants"
+	"openshortpath/server/models"
 	"openshortpath/server/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
+	"gorm.io/gorm"
 )
 
 type JWTMiddleware struct {
-	cfg         *config.JWT
-	apiKeyMw    *APIKeyMiddleware
+	cfg          *config.JWT
+	apiKeyMw     *APIKeyMiddleware
+	db           *gorm.DB
+	authProvider string
 }
 
-func NewJWTMiddleware(cfg *config.JWT) *JWTMiddleware {
+func NewJWTMiddleware(cfg *config.JWT, db *gorm.DB, authProvider string) *JWTMiddleware {
 	return &JWTMiddleware{
-		cfg: cfg,
+		cfg:          cfg,
+		db:           db,
+		authProvider: authProvider,
 	}
 }
 
@@ -74,6 +80,14 @@ func (m *JWTMiddleware) OptionalAuth() gin.HandlerFunc {
 		userID, err := m.validateToken(tokenString)
 		if err != nil {
 			// Silently ignore validation errors (optional auth)
+			c.Next()
+			return
+		}
+
+		// Ensure user exists in database for external JWT providers
+		if err := m.ensureUserExists(userID); err != nil {
+			// Log error but don't fail the request (optional auth)
+			// The user will be created on the next request or when they hit a protected endpoint
 			c.Next()
 			return
 		}
@@ -145,6 +159,53 @@ func (m *JWTMiddleware) validateToken(tokenString string) (string, error) {
 	return sub, nil
 }
 
+// ensureUserExists ensures a user exists in the database for external JWT providers
+// If the user doesn't exist and authProvider is "external_jwt" or "clerk", it creates a new user
+// with UserID and Username both set to the sub claim
+func (m *JWTMiddleware) ensureUserExists(userID string) error {
+	// Only auto-create users for external JWT providers, not for local auth
+	if m.authProvider != "external_jwt" && m.authProvider != "clerk" {
+		return nil
+	}
+
+	// Check if database is available
+	if m.db == nil {
+		return fmt.Errorf("database not available")
+	}
+
+	// Use FirstOrCreate to atomically check and create user
+	// This handles race conditions where multiple requests might try to create the same user concurrently
+	username := userID
+	user := models.User{
+		UserID:         userID,
+		Username:       &username,
+		HashedPassword: nil, // No password for external auth
+		Active:         true,
+		Plan:           constants.PlanHobbyist,
+	}
+
+	// FirstOrCreate will find the user if it exists, or create it if it doesn't
+	// The Where clause specifies the condition to find existing user
+	result := m.db.Where("user_id = ?", userID).FirstOrCreate(&user)
+	if result.Error != nil {
+		// Check if it's a unique constraint violation on username
+		// This can happen if another request created the user with the same username
+		// In that case, the user might exist but with a different user_id, or there was a race
+		if strings.Contains(result.Error.Error(), "UNIQUE constraint") || 
+		   strings.Contains(result.Error.Error(), "duplicate key") {
+			// Try to find the user by user_id (which should be unique)
+			var existingUser models.User
+			if err := m.db.Where("user_id = ?", userID).First(&existingUser).Error; err == nil {
+				// User exists, that's fine
+				return nil
+			}
+		}
+		return fmt.Errorf("failed to ensure user exists: %w", result.Error)
+	}
+
+	return nil
+}
+
 // RequireAuth is a middleware that requires JWT token or API key authentication
 // If a valid API key is provided (starts with osp_sk_), it uses API key authentication
 // Otherwise, if a valid JWT token is provided, it extracts the 'sub' claim and stores it as 'user_id' in the context
@@ -200,6 +261,16 @@ func (m *JWTMiddleware) RequireAuth() gin.HandlerFunc {
 		if err != nil {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"error": "Invalid or expired token",
+			})
+			c.Abort()
+			return
+		}
+
+		// Ensure user exists in database for external JWT providers
+		if err := m.ensureUserExists(userID); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Failed to ensure user exists",
+				"details": err.Error(),
 			})
 			c.Abort()
 			return

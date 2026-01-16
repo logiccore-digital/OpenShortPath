@@ -14,10 +14,12 @@ import (
 
 func TestAuthProviderHandler_GetAuthProvider(t *testing.T) {
 	tests := []struct {
-		name          string
-		cfg           *config.Config
-		expectedAuth  string
-		expectedSignup bool
+		name                   string
+		cfg                    *config.Config
+		expectedAuth           string
+		expectedSignup         bool
+		expectedClerkKey       string
+		shouldHaveClerkKey     bool
 	}{
 		{
 			name: "local auth with signup enabled",
@@ -25,8 +27,9 @@ func TestAuthProviderHandler_GetAuthProvider(t *testing.T) {
 				AuthProvider: "local",
 				EnableSignup: true,
 			},
-			expectedAuth:  "local",
-			expectedSignup: true,
+			expectedAuth:       "local",
+			expectedSignup:     true,
+			shouldHaveClerkKey: false,
 		},
 		{
 			name: "local auth with signup disabled",
@@ -34,8 +37,9 @@ func TestAuthProviderHandler_GetAuthProvider(t *testing.T) {
 				AuthProvider: "local",
 				EnableSignup: false,
 			},
-			expectedAuth:  "local",
-			expectedSignup: false,
+			expectedAuth:       "local",
+			expectedSignup:     false,
+			shouldHaveClerkKey: false,
 		},
 		{
 			name: "external_jwt auth (signup should be false)",
@@ -43,8 +47,24 @@ func TestAuthProviderHandler_GetAuthProvider(t *testing.T) {
 				AuthProvider: "external_jwt",
 				EnableSignup: false,
 			},
-			expectedAuth:  "external_jwt",
-			expectedSignup: false,
+			expectedAuth:       "external_jwt",
+			expectedSignup:     false,
+			shouldHaveClerkKey: false,
+		},
+		{
+			name: "clerk auth with publishable key",
+			cfg: &config.Config{
+				AuthProvider: "clerk",
+				EnableSignup: false,
+				Clerk: &config.Clerk{
+					PublishableKey: "pk_test_example123",
+					SecretKey:      "sk_test_example456",
+				},
+			},
+			expectedAuth:       "clerk",
+			expectedSignup:     false,
+			expectedClerkKey:   "pk_test_example123",
+			shouldHaveClerkKey: true,
 		},
 	}
 
@@ -66,6 +86,13 @@ func TestAuthProviderHandler_GetAuthProvider(t *testing.T) {
 			assert.NoError(t, err)
 			assert.Equal(t, tt.expectedAuth, response["auth_provider"])
 			assert.Equal(t, tt.expectedSignup, response["enable_signup"])
+
+			if tt.shouldHaveClerkKey {
+				assert.Contains(t, response, "clerk_publishable_key")
+				assert.Equal(t, tt.expectedClerkKey, response["clerk_publishable_key"])
+			} else {
+				assert.NotContains(t, response, "clerk_publishable_key")
+			}
 		})
 	}
 }

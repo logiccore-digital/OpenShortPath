@@ -8,6 +8,26 @@ interface JWTPayload {
   iat?: number
 }
 
+// Global function to get Clerk token - will be set by ClerkProvider when Clerk is enabled
+let getClerkTokenFn: (() => Promise<string | null>) | null = null
+
+/**
+ * Set the function to get Clerk token (called by ClerkProvider)
+ */
+export function setClerkTokenGetter(fn: (() => Promise<string | null>) | null): void {
+  getClerkTokenFn = fn
+}
+
+/**
+ * Get Clerk token if available
+ */
+export async function getClerkToken(): Promise<string | null> {
+  if (getClerkTokenFn) {
+    return getClerkTokenFn()
+  }
+  return null
+}
+
 /**
  * Retrieve JWT token from localStorage
  */
@@ -54,6 +74,7 @@ export function isTokenExpired(token: string): boolean {
 /**
  * Check if user is authenticated
  * Returns true if a valid token exists and is not expired
+ * Note: For Clerk authentication, this should be checked via Clerk's useAuth hook
  */
 export function isAuthenticated(): boolean {
   const token = getStoredToken()
@@ -63,5 +84,24 @@ export function isAuthenticated(): boolean {
   }
   
   return !isTokenExpired(token)
+}
+
+/**
+ * Get the current authentication token (Clerk or JWT)
+ * Returns Clerk token if available, otherwise falls back to stored JWT token
+ */
+export async function getAuthToken(): Promise<string | null> {
+  // Try to get Clerk token first
+  try {
+    const clerkToken = await getClerkToken()
+    if (clerkToken) {
+      return clerkToken
+    }
+  } catch (error) {
+    console.error("Error getting Clerk token:", error)
+  }
+  
+  // Fall back to stored JWT token
+  return getStoredToken()
 }
 

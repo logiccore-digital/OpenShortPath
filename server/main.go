@@ -77,7 +77,7 @@ func main() {
 	var jwtMiddleware *middleware.JWTMiddleware
 	var apiKeyMiddleware *middleware.APIKeyMiddleware
 	if cfg.JWT != nil {
-		jwtMiddleware = middleware.NewJWTMiddleware(cfg.JWT)
+		jwtMiddleware = middleware.NewJWTMiddleware(cfg.JWT, db, cfg.AuthProvider)
 		apiKeyMiddleware = middleware.NewAPIKeyMiddleware(db)
 		jwtMiddleware.SetAPIKeyMiddleware(apiKeyMiddleware)
 		r.Use(jwtMiddleware.OptionalAuth())

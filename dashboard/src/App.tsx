@@ -8,13 +8,15 @@ import { Account } from "./pages/Account"
 import { Namespaces } from "./pages/Namespaces"
 import { ProtectedRoute } from "./components/ProtectedRoute"
 import { ThemeProvider } from "./components/theme/ThemeProvider"
+import { ConditionalClerkProvider } from "./components/auth/ClerkProvider"
 
 function App() {
   return (
     <ThemeProvider>
-      <BrowserRouter basename="/dashboard">
-        <Toaster position="bottom-right" richColors />
-        <Routes>
+      <ConditionalClerkProvider>
+        <BrowserRouter basename="/dashboard">
+          <Toaster position="bottom-right" richColors />
+          <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
         <Route
@@ -58,7 +60,8 @@ function App() {
           }
         />
         </Routes>
-      </BrowserRouter>
+        </BrowserRouter>
+      </ConditionalClerkProvider>
     </ThemeProvider>
   )
 }
