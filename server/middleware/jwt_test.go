@@ -60,7 +60,7 @@ func TestJWTMiddleware_OptionalAuth_NoAuthorizationHeader(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Setup Gin context
@@ -85,7 +85,7 @@ func TestJWTMiddleware_OptionalAuth_InvalidAuthorizationFormat(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Test cases
@@ -125,7 +125,7 @@ func TestJWTMiddleware_OptionalAuth_ValidHS256Token(t *testing.T) {
 		SecretKey: secretKey,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate valid token
@@ -156,7 +156,7 @@ func TestJWTMiddleware_OptionalAuth_ValidRS256Token(t *testing.T) {
 		PublicKey: publicKeyPEM,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate valid token
@@ -186,7 +186,7 @@ func TestJWTMiddleware_OptionalAuth_InvalidTokenSignature(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate token with wrong secret
@@ -216,7 +216,7 @@ func TestJWTMiddleware_OptionalAuth_MissingSubClaim(t *testing.T) {
 		SecretKey: secretKey,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate token without sub claim
@@ -249,7 +249,7 @@ func TestJWTMiddleware_OptionalAuth_EmptySubClaim(t *testing.T) {
 		SecretKey: secretKey,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate token with empty sub claim
@@ -281,7 +281,7 @@ func TestJWTMiddleware_OptionalAuth_InvalidTokenFormat(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Setup Gin context with invalid token
@@ -307,7 +307,7 @@ func TestJWTMiddleware_OptionalAuth_WrongAlgorithm(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate RS256 token
@@ -336,7 +336,7 @@ func TestJWTMiddleware_OptionalAuth_MissingSecretKey(t *testing.T) {
 		SecretKey: "", // Missing secret key
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate token with some secret
@@ -365,7 +365,7 @@ func TestJWTMiddleware_OptionalAuth_MissingPublicKey(t *testing.T) {
 		PublicKey: "", // Missing public key
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	privateKey, _ := generateTestRSAKeyPair(t)
@@ -394,7 +394,7 @@ func TestJWTMiddleware_OptionalAuth_UnsupportedAlgorithm(t *testing.T) {
 		SecretKey: "test-secret",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Setup Gin context
@@ -419,7 +419,7 @@ func TestJWTMiddleware_OptionalAuth_InvalidPublicKeyFormat(t *testing.T) {
 		PublicKey: "invalid-pem-format",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	privateKey, _ := generateTestRSAKeyPair(t)
@@ -449,7 +449,7 @@ func TestJWTMiddleware_OptionalAuth_NonStringSubClaim(t *testing.T) {
 		SecretKey: secretKey,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Generate token with non-string sub claim
@@ -476,7 +476,7 @@ func TestJWTMiddleware_OptionalAuth_NonStringSubClaim(t *testing.T) {
 
 func TestJWTMiddleware_OptionalAuth_NilConfig(t *testing.T) {
 	// Setup - nil config
-	middleware := NewJWTMiddleware(nil)
+	middleware := NewJWTMiddleware(nil, nil, "local")
 	handler := middleware.OptionalAuth()
 
 	// Setup Gin context
@@ -502,7 +502,7 @@ func TestJWTMiddleware_RequireAuth_NoAuthorizationHeader(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Setup Gin context
@@ -528,7 +528,7 @@ func TestJWTMiddleware_RequireAuth_InvalidAuthorizationFormat(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Test cases
@@ -567,7 +567,7 @@ func TestJWTMiddleware_RequireAuth_ValidHS256Token(t *testing.T) {
 		SecretKey: secretKey,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Generate valid token
@@ -600,7 +600,7 @@ func TestJWTMiddleware_RequireAuth_ValidRS256Token(t *testing.T) {
 		PublicKey: publicKeyPEM,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Generate valid token
@@ -632,7 +632,7 @@ func TestJWTMiddleware_RequireAuth_InvalidTokenSignature(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Generate token with wrong secret
@@ -664,7 +664,7 @@ func TestJWTMiddleware_RequireAuth_MissingSubClaim(t *testing.T) {
 		SecretKey: secretKey,
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Generate token without sub claim
@@ -698,7 +698,7 @@ func TestJWTMiddleware_RequireAuth_InvalidTokenFormat(t *testing.T) {
 		SecretKey: "test-secret-key",
 	}
 
-	middleware := NewJWTMiddleware(cfg)
+	middleware := NewJWTMiddleware(cfg, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Setup Gin context with invalid token
@@ -720,7 +720,7 @@ func TestJWTMiddleware_RequireAuth_InvalidTokenFormat(t *testing.T) {
 
 func TestJWTMiddleware_RequireAuth_NilConfig(t *testing.T) {
 	// Setup - nil config
-	middleware := NewJWTMiddleware(nil)
+	middleware := NewJWTMiddleware(nil, nil, "local")
 	handler := middleware.RequireAuth()
 
 	// Setup Gin context

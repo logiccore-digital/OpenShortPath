@@ -19,18 +19,20 @@ import {
   UpdateNamespaceRequest,
   ListNamespacesResponse,
 } from "../types/api"
-import { getStoredToken, removeStoredToken } from "../lib/auth"
+import { getStoredToken, removeStoredToken, getAuthToken } from "../lib/auth"
 
 const API_BASE_URL = "/api/v1"
 
 /**
  * Base API client with automatic token attachment and error handling
+ * Uses Clerk token if available, otherwise falls back to stored JWT token
  */
 async function apiRequest<T>(
   endpoint: string,
   options: RequestInit = {}
 ): Promise<T> {
-  const token = getStoredToken()
+  // Get auth token (Clerk or JWT)
+  const token = await getAuthToken()
   
   // Build headers object
   const headers: Record<string, string> = {
@@ -62,10 +64,22 @@ async function apiRequest<T>(
     headers,
   })
   
-  // Handle 401 Unauthorized - clear token and redirect to login
+  // Handle 401 Unauthorized - check if using Clerk before redirecting
   if (response.status === 401) {
-    removeStoredToken()
-    window.location.href = "/dashboard/login"
+    // Don't redirect if this is the auth-provider endpoint (to avoid loops)
+    if (endpoint !== "/auth-provider") {
+      // Check auth provider to determine if we should redirect
+      // Use a simple check to avoid recursive calls
+      const storedAuthProvider = sessionStorage.getItem("auth_provider")
+      
+      // Only redirect if not using Clerk (Clerk handles its own auth flow)
+      if (storedAuthProvider !== "clerk") {
+        removeStoredToken()
+        window.location.href = "/dashboard/login"
+      }
+      // If using Clerk, don't redirect - let Clerk handle the authentication state
+      // The ProtectedRoute will handle showing login if needed
+    }
     throw new Error("Unauthorized")
   }
   
@@ -98,7 +112,24 @@ async function apiRequest<T>(
  * Get authentication provider type
  */
 export async function getAuthProvider(): Promise<AuthProviderResponse> {
-  return apiRequest<AuthProviderResponse>("/auth-provider")
+  // Use fetch directly to avoid token attachment and potential loops
+  const response = await fetch(`${API_BASE_URL}/auth-provider`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  })
+  
+  if (!response.ok) {
+    throw new Error(`Failed to fetch auth provider: ${response.status} ${response.statusText}`)
+  }
+  
+  const data = await response.json() as AuthProviderResponse
+  // Cache the auth provider to avoid redirect loops
+  if (data.auth_provider) {
+    sessionStorage.setItem("auth_provider", data.auth_provider)
+  }
+  return data
 }
 
 /**

@@ -1,8 +1,9 @@
 // API Type Definitions matching server response types
 
 export interface AuthProviderResponse {
-  auth_provider: "local" | "external_jwt"
+  auth_provider: "local" | "external_jwt" | "clerk"
   enable_signup: boolean
+  clerk_publishable_key?: string
 }
 
 export interface LoginRequest {

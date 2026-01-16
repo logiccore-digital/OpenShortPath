@@ -233,3 +233,55 @@ func TestConfig_EnableSignup_False(t *testing.T) {
 	assert.NoError(t, err)
 	assert.False(t, cfg.EnableSignup)
 }
+
+func TestConfig_Validate_ClerkAuth_Valid(t *testing.T) {
+	cfg := &Config{
+		AuthProvider: "clerk",
+		Clerk: &Clerk{
+			PublishableKey: "pk_test_example123",
+			SecretKey:      "sk_test_example456",
+		},
+	}
+
+	err := cfg.Validate()
+	assert.NoError(t, err)
+}
+
+func TestConfig_Validate_ClerkAuth_MissingClerkConfig(t *testing.T) {
+	cfg := &Config{
+		AuthProvider: "clerk",
+		Clerk:        nil,
+	}
+
+	err := cfg.Validate()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "Clerk config is required")
+}
+
+func TestConfig_Validate_ClerkAuth_MissingPublishableKey(t *testing.T) {
+	cfg := &Config{
+		AuthProvider: "clerk",
+		Clerk: &Clerk{
+			PublishableKey: "",
+			SecretKey:      "sk_test_example456",
+		},
+	}
+
+	err := cfg.Validate()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "clerk.publishable_key is required")
+}
+
+func TestConfig_Validate_ClerkAuth_MissingSecretKey(t *testing.T) {
+	cfg := &Config{
+		AuthProvider: "clerk",
+		Clerk: &Clerk{
+			PublishableKey: "pk_test_example123",
+			SecretKey:      "",
+		},
+	}
+
+	err := cfg.Validate()
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "clerk.secret_key is required")
+}

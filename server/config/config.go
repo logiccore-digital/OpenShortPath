@@ -14,14 +14,20 @@ type JWT struct {
 	PrivateKey string `yaml:"private_key"` // Private key for RS256 in PEM format (required for signing when using RS256)
 }
 
+type Clerk struct {
+	PublishableKey string `yaml:"publishable_key"` // Clerk publishable key (required when auth_provider is "clerk")
+	SecretKey     string `yaml:"secret_key"`      // Clerk secret key (required when auth_provider is "clerk")
+}
+
 type Config struct {
 	Port                  int      `yaml:"port"`
 	PostgresURI           string   `yaml:"postgres_uri"`
 	SQLitePath            string   `yaml:"sqlite_path"`
 	AvailableShortDomains []string `yaml:"available_short_domains"`
-	AuthProvider          string   `yaml:"auth_provider"` // "external_jwt" or "local"
+	AuthProvider          string   `yaml:"auth_provider"` // "external_jwt", "local", or "clerk"
 	EnableSignup          bool     `yaml:"enable_signup"` // Enable user signup (only used when auth_provider is "local")
 	JWT                   *JWT     `yaml:"jwt,omitempty"`
+	Clerk                 *Clerk   `yaml:"clerk,omitempty"`
 	AdminPassword         string   `yaml:"admin_password"`           // Super long password for administrative purposes
 	DashboardDevServerURL string   `yaml:"dashboard_dev_server_url"` // URL for dashboard dev server (optional, for development)
 	LandingDevServerURL   string   `yaml:"landing_dev_server_url"`  // URL for landing page dev server (optional, for development)
@@ -69,12 +75,12 @@ func LoadConfig(configPath string) (*Config, error) {
 
 // Validate validates the configuration
 func (c *Config) Validate() error {
-	// Auth provider is required and must be either "local" or "external_jwt"
+	// Auth provider is required and must be either "local", "external_jwt", or "clerk"
 	if c.AuthProvider == "" {
-		return fmt.Errorf("auth_provider is required (must be 'local' or 'external_jwt')")
+		return fmt.Errorf("auth_provider is required (must be 'local', 'external_jwt', or 'clerk')")
 	}
-	if c.AuthProvider != "local" && c.AuthProvider != "external_jwt" {
-		return fmt.Errorf("invalid auth_provider: %s (must be 'local' or 'external_jwt')", c.AuthProvider)
+	if c.AuthProvider != "local" && c.AuthProvider != "external_jwt" && c.AuthProvider != "clerk" {
+		return fmt.Errorf("invalid auth_provider: %s (must be 'local', 'external_jwt', or 'clerk')", c.AuthProvider)
 	}
 
 	// If auth_provider is "local", JWT config must be provided
@@ -120,6 +126,19 @@ func (c *Config) Validate() error {
 			}
 		default:
 			return fmt.Errorf("unsupported JWT algorithm: %s (must be HS256 or RS256)", c.JWT.Algorithm)
+		}
+	}
+
+	// If auth_provider is "clerk", Clerk config must be provided
+	if c.AuthProvider == "clerk" {
+		if c.Clerk == nil {
+			return fmt.Errorf("Clerk config is required when auth_provider is 'clerk'")
+		}
+		if c.Clerk.PublishableKey == "" {
+			return fmt.Errorf("clerk.publishable_key is required when auth_provider is 'clerk'")
+		}
+		if c.Clerk.SecretKey == "" {
+			return fmt.Errorf("clerk.secret_key is required when auth_provider is 'clerk'")
 		}
 	}
 
