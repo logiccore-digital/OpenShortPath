@@ -112,7 +112,7 @@ function ClerkNavbar() {
                         ? "text-[hsl(0,0%,75%)]" 
                         : "text-[hsl(0,0%,45%)]",
                     },
-                  }}
+                  } as any}
                 />
               </>
             )}
@@ -128,7 +128,7 @@ function ClerkNavbar() {
                     colorPrimary: isDark ? "hsl(142, 71%, 45%)" : "hsl(0, 0%, 9%)",
                     fontFamily: "'Open Sans', ui-sans-serif, system-ui, sans-serif",
                   },
-                }}
+                } as any}
               >
                 <Button variant="outline" className="text-xs uppercase tracking-wider h-auto py-1.5 px-3">
                   Sign In

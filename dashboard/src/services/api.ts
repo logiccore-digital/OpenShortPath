@@ -19,7 +19,7 @@ import {
   UpdateNamespaceRequest,
   ListNamespacesResponse,
 } from "../types/api"
-import { getStoredToken, removeStoredToken, getAuthToken } from "../lib/auth"
+import { removeStoredToken, getAuthToken } from "../lib/auth"
 
 const API_BASE_URL = "/api/v1"
 

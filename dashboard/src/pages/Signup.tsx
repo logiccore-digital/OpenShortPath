@@ -123,7 +123,7 @@ function ClerkSignup() {
                 ? "bg-[hsl(0,0%,15%)] text-[hsl(0,0%,90%)] border-[hsl(0,0%,25%)]" 
                 : "bg-[hsl(0,0%,96%)] text-[hsl(0,0%,9%)] border-[hsl(0,0%,90%)]",
             },
-          }}
+          } as any}
         />
       </div>
     </div>
